@@ -1,0 +1,13 @@
+# Nunca subir datos personales ni financieros
+*.csv
+*.xlsx
+*.xls
+*.pdf
+*.zip
+*.finanzas
+copia-cifrada-*
+*.env
+.env*
+node_modules/
+dist/
+.DS_Store
