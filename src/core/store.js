@@ -1,6 +1,7 @@
 // Datos de la app y su actualización. Lógica pura: no toca el disco ni el reloj (la fecha llega como parámetro).
 // Cada importación añade solo lo nuevo (por clave), las fotos (posiciones) se sustituyen y se anota cuándo se actualizó cada fuente.
 
+import { recordSnapshot } from './portfolio.js';
 export const DATA_VERSION = 1;
 export const STALE_DAYS = 30;
 
@@ -43,6 +44,10 @@ export const SCREEN_SOURCES = {
  * @property {Record<string,number>} budget presupuesto mensual por grupo de gasto, en euros (id del grupo -> euros)
  * @property {Record<string,number>} incomeTarget objetivo mensual de ingresos por grupo (nomina, reembolsos), en euros; opcional
  * @property {string|null} incomeTargetSavedAt
+ * @property {{date:string,valueCents:number,positions:{isin:string,name:string,quantityE4:number,valueCents:number}[]}[]} portfolioHistory una foto por fecha de importación o de cambio de precios (el historial se construye con cada importación)
+ * @property {Record<string,number>} prices precios puestos a mano (isin -> euros por participación); se borran al importar una foto nueva
+ * @property {Record<string,string>} assetTypes tipo de activo elegido por la usuaria (isin -> tipo)
+ * @property {{targetFixedPct:number, monthlyEur:number}} portfolioSettings objetivo de renta fija (%) y aportación mensual a la cartera (euros; 0 = sin definir)
  * @property {number} savingsTarget objetivo mensual de ahorro en euros; 0 = sin objetivo
  * @property {Record<string,string>} names nombres que ha puesto la usuaria a movimientos (clave del movimiento -> nombre)
  * @property {string|null} budgetSavedAt cuándo se guardó el presupuesto (para la revisión cada 6 meses)
@@ -65,6 +70,10 @@ export const emptyData = () => ({
   budgetSavedAt: null,
   names: {},
   savingsTarget: 0,
+  portfolioHistory: [],
+  prices: {},
+  assetTypes: {},
+  portfolioSettings: { targetFixedPct: 10, monthlyEur: 0 },
   incomeTarget: {},
   incomeTargetSavedAt: null,
   settings: { lockMinutes: DEFAULT_LOCK_MINUTES },
@@ -81,6 +90,10 @@ export function validateData(d) {
   if (d.budgetSavedAt === undefined) d.budgetSavedAt = null;
   if (!d.incomeTarget || typeof d.incomeTarget !== 'object') d.incomeTarget = {};
   if (d.incomeTargetSavedAt === undefined) d.incomeTargetSavedAt = null;
+  if (!Array.isArray(d.portfolioHistory)) d.portfolioHistory = [];
+  if (!d.prices || typeof d.prices !== 'object') d.prices = {};
+  if (!d.assetTypes || typeof d.assetTypes !== 'object') d.assetTypes = {};
+  if (!d.portfolioSettings || typeof d.portfolioSettings !== 'object') d.portfolioSettings = { targetFixedPct: 10, monthlyEur: 0 };
   if (typeof d.savingsTarget !== 'number' || !(d.savingsTarget >= 0)) d.savingsTarget = 0;
   if (!d.names || typeof d.names !== 'object') d.names = {};
   if (!d.settings || !LOCK_OPTIONS.includes(d.settings.lockMinutes)) d.settings = { lockMinutes: DEFAULT_LOCK_MINUTES }; // datos guardados antes de existir los ajustes
@@ -128,6 +141,8 @@ export function ingest(data, result, fileName, nowIso) {
   } else if (id === 'degiro-portfolio') {
     // Foto del momento: la última sustituye a la anterior; el archivo no trae fecha, se usa la de la importación.
     d.portfolio = { positions: result.positions, cashCents: result.cashCents ?? null, asOf: nowIso.slice(0, 10) };
+    d.prices = {}; // los precios a mano valían para la foto anterior
+    d.portfolioHistory = recordSnapshot(d, nowIso.slice(0, 10));
     added = result.positions.length; lastDataDate = nowIso.slice(0, 10);
   } else {
     throw new Error('Formato no soportado');

@@ -5,6 +5,7 @@ import { emptyData, validateData, ingest, LOCK_OPTIONS, DEFAULT_LOCK_MINUTES } f
 import { importCsv } from './csv/import.js';
 import { SOURCES } from './store.js';
 import { applyRules, classifyMovement, reclassifyMovement, renameMovement } from './classify.js';
+import { recordSnapshot } from './portfolio.js';
 import { setTipo, addCategory, deleteCategory } from './catedit.js';
 import { exportBackup, restoreBackup, backupFileName } from './backup.js';
 
@@ -139,6 +140,26 @@ export class Session {
   async addCategory(c) { this.touch(); const r = addCategory(this.data, c); this.data = r.data; await this.save(); return r.id; }
 
   async deleteCategory(id) { this.touch(); const r = deleteCategory(this.data, id); this.data = r.data; await this.save(); return r.moved; }
+
+  /** Precios a mano (isin -> euros por participación). Vacío o 0 = usar el precio del archivo. Guarda también la foto de hoy. */
+  async setPrices(prices) {
+    this.touch();
+    const clean = {};
+    for (const [k, v] of Object.entries(prices)) if (Number.isFinite(v) && v > 0) clean[k] = v;
+    const d = { ...this.data, prices: clean };
+    d.portfolioHistory = recordSnapshot(d, this.now().slice(0, 10));
+    this.data = d;
+    await this.save();
+  }
+
+  async setAssetType(isin, kind) { this.touch(); this.data = { ...this.data, assetTypes: { ...this.data.assetTypes, [isin]: kind } }; await this.save(); }
+
+  async setPortfolioSettings(s) {
+    this.touch();
+    const pct = Number(s.targetFixedPct); const m = Number(s.monthlyEur);
+    this.data = { ...this.data, portfolioSettings: { targetFixedPct: Number.isFinite(pct) ? Math.min(100, Math.max(0, Math.round(pct))) : 10, monthlyEur: Number.isFinite(m) && m > 0 ? Math.round(m) : 0 } };
+    await this.save();
+  }
 
   /** @param {number} euros objetivo mensual de ahorro; 0 o vacío = sin objetivo */
   async setSavingsTarget(euros) {

@@ -20,6 +20,13 @@ export function renderDatos(ctx) {
 <a class="card link-card" href="#/datos/categorias"><span><strong>Categorías</strong><span class="note">*grupos, subcategorías y tipo de gasto</span></span><span aria-hidden="true">›</span></a>
 <a class="card link-card" href="#/datos/movimientos"><span><strong>Movimientos importados</strong><span class="note">*todo lo guardado, también traspasos y ahorro</span></span><span aria-hidden="true">›</span></a>
 <section class="card stack">
+  <h2>Cartera</h2>
+  <label class="obj-row">Objetivo de renta fija<span class="bud-in"><input id="pf-fixed" type="text" inputmode="decimal" autocomplete="off" data-change="save-pf" value="${d.portfolioSettings.targetFixedPct}" style="width:80px" aria-label="Objetivo de renta fija en porcentaje">%</span></label>
+  <label class="obj-row">Aportación mensual<span class="bud-in"><input id="pf-month" type="text" inputmode="decimal" autocomplete="off" data-change="save-pf" value="${d.portfolioSettings.monthlyEur || ''}" placeholder="Sin definir" style="width:100px" aria-label="Aportación mensual a la cartera en euros">€</span></label>
+  <p class="note">*el resto hasta el 100 % es renta variable; la aportación mensual sirve para calcular en cuántos meses llegas al objetivo</p>
+  <a class="link" href="#/datos/precios" style="min-height:44px;display:flex;align-items:center">Editar precios a mano ›</a>
+</section>
+<section class="card stack">
   <h2>Importar CSV</h2>
   <p class="note">*elige uno o varios archivos exportados desde la app de cada plataforma; se reconocen solos y solo entra lo nuevo</p>
   <label class="btn file">Elegir archivos<input type="file" accept=".csv,text/csv" multiple data-action="import" hidden></label>
@@ -60,4 +67,10 @@ export function renderDatos(ctx) {
   <p class="note">*solo se guarda el nombre del archivo y cuántas filas eran nuevas, nunca su contenido</p>
 </section>
 <button class="btn secondary" data-action="lock">Bloquear ahora</button>`;
+}
+
+export async function actDatos(name, el, ctx) {
+  if (name !== 'save-pf') return false;
+  await ctx.session.setPortfolioSettings({ targetFixedPct: document.getElementById('pf-fixed').value.replace(',', '.'), monthlyEur: document.getElementById('pf-month').value.replace(',', '.') });
+  return true;
 }

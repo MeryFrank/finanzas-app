@@ -221,3 +221,19 @@ label.bud-row { flex-direction: row; justify-content: space-between; align-items
 .cq-row { display: grid; grid-template-columns: 40px repeat(5, minmax(0, 1fr)); gap: 2px; padding: 8px 0; border-top: 1px solid #e6f4ee; font-size: 12px; text-align: right; }
 .cq-row.head { border-top: 0; font-size: 10px; font-weight: 600; color: var(--muted); padding: 4px 0 2px; }
 .cq-row .l { text-align: left; } .cq-row.tot { font-weight: 700; border-top: 2px solid #cfe8de; }
+
+/* ---- Cartera ---- */
+.kpi2.top .card.k { position: relative; }
+.kcard { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--text); }
+.kpi2.top .info-btn { position: absolute; top: 0; right: 0; }
+.link-s { font-size: 12px; font-weight: 600; color: #2c4b7a; }
+.seg.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.neto { display: flex; flex-direction: column; gap: 2px; }
+.xl { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
+input[type=range] { width: 100%; min-height: 44px; accent-color: #047857; }
+.menu-item.col { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; }
+.pos-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 56px; border-top: 1px solid #e6f4ee; text-decoration: none; color: var(--text); }
+.pos-m { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .pos-m strong { font-size: 13px; overflow-wrap: anywhere; }
+.pos-v { display: flex; align-items: center; gap: 6px; text-align: right; } .pos-v > span:first-child { display: flex; flex-direction: column; }
+.kpi-n.sm { font-size: 15px; }
+.pm-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.9fr; gap: 4px; padding: 8px 0; border-top: 1px solid #e6f4ee; font-size: 12px; text-align: right; } .pm-row span:first-child { text-align: left; }

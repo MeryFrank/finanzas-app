@@ -66,7 +66,12 @@ document.addEventListener('submit', async (ev) => {
   try {
     if (form.dataset.form === 'setup') { await session.create(v.password, v.confirm); ui.lockError = ''; }
     else if (form.dataset.form === 'unlock') { await session.unlock(v.password); ui.lockError = ''; }
-    else if (form.dataset.form === 'target') {
+    else if (form.dataset.form === 'prices') {
+      const prices = {};
+      for (const [k, val] of Object.entries(v)) if (k.startsWith('p-')) prices[k.slice(2)] = parseFloat(String(val).replace(',', '.'));
+      await session.setPrices(prices);
+      ui.precios = { saved: true };
+    } else if (form.dataset.form === 'target') {
       const target = {};
       Object.keys(INCOME_GROUPS).forEach((g) => { target[g] = parseBudget(v['t-' + g]); });
       await session.setIncomeTarget(target);
@@ -95,6 +100,14 @@ document.addEventListener('submit', async (ev) => {
 
 // El total del presupuesto se actualiza al escribir, sin volver a pintar la pantalla (así no se pierde el foco).
 document.addEventListener('input', (ev) => {
+  const pf = ev.target.closest('form[data-form=prices]');
+  if (pf) {
+    if (ui.precios) ui.precios.saved = false;
+    let total = 0;
+    pf.querySelectorAll('input[data-shares]').forEach((i) => { const price = parseFloat(i.value.replace(',', '.')); const v = Math.round(Number(i.dataset.shares) * (price > 0 ? price : 0)); total += v; const c = pf.querySelector(`[data-val="${i.name.slice(2)}"]`); if (c) c.textContent = eur(v * 100); });
+    const t = $('prices-total'); if (t) t.textContent = eur(total * 100);
+    return;
+  }
   const form = ev.target.closest('form[data-form=budget], form[data-form=target]');
   if (!form) return;
   const st = form.dataset.form === 'budget' ? ui.presupuesto : ui.objetivo;
