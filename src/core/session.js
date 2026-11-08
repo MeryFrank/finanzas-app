@@ -161,6 +161,17 @@ export class Session {
     await this.save();
   }
 
+  /** Marca o desmarca una casilla del proceso mensual; al cambiar de mes se parte de cero. */
+  async toggleMonthly(key) {
+    this.touch();
+    const month = new Date(this.now()).toISOString().slice(0, 7);
+    const cur = this.data.monthly.month === month ? this.data.monthly.checks : {};
+    const checks = { ...cur, [key]: !cur[key] };
+    const all = ['c1', 'c2', 'c3', 'c4', 'c5'].every((k) => checks[k]);
+    this.data = { ...this.data, monthly: { month, checks, lastDoneAt: all ? new Date(this.now()).toISOString() : this.data.monthly.lastDoneAt } };
+    await this.save();
+  }
+
   /** Ajustes de independencia; solo se guardan los campos válidos que se pasen. */
   async setIndependence(c) {
     this.touch();
@@ -201,7 +212,10 @@ export class Session {
   /** @returns {Promise<{name:string, text:string}>} */
   async makeBackup(password) {
     this.touch();
-    return { name: backupFileName(this.now()), text: await exportBackup(password, this.data, { iterations: this.iterations }) };
+    const out = { name: backupFileName(this.now()), text: await exportBackup(password, this.data, { iterations: this.iterations }) };
+    this.data = { ...this.data, lastBackupAt: new Date(this.now()).toISOString() };
+    await this.save();
+    return out;
   }
 
   /** Sustituye los datos actuales por los de la copia. */
