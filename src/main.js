@@ -106,9 +106,9 @@ document.addEventListener('input', (ev) => {
 
 document.addEventListener('change', async (ev) => {
   const el = ev.target;
-  if (el.dataset.search !== undefined) {
+  if (el.dataset.search !== undefined || el.dataset.change !== undefined) {
     const screen = SCREENS.find((x) => x.id === route().id);
-    try { if (screen.act && await screen.act('search', el, makeCtx())) render(); } catch (e) { ui.backupError = fail(e); render(); }
+    try { if (screen.act && await screen.act(el.dataset.change || 'search', el, makeCtx())) render(); } catch (e) { ui.backupError = fail(e); render(); }
     return;
   }
   if (el.dataset.action === 'import') {

@@ -140,6 +140,14 @@ export class Session {
 
   async deleteCategory(id) { this.touch(); const r = deleteCategory(this.data, id); this.data = r.data; await this.save(); return r.moved; }
 
+  /** @param {number} euros objetivo mensual de ahorro; 0 o vacío = sin objetivo */
+  async setSavingsTarget(euros) {
+    this.touch();
+    const v = Number(euros);
+    this.data = { ...this.data, savingsTarget: Number.isFinite(v) && v > 0 ? Math.round(v) : 0 };
+    await this.save();
+  }
+
   /** @param {Record<string,number>} target euros al mes por grupo de ingreso */
   async setIncomeTarget(target) {
     this.touch();
