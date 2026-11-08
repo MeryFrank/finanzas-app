@@ -4,6 +4,7 @@ import { createVault, openVault, seal } from './crypto.js';
 import { emptyData, validateData, ingest, LOCK_OPTIONS, DEFAULT_LOCK_MINUTES } from './store.js';
 import { importCsv } from './csv/import.js';
 import { SOURCES } from './store.js';
+import { applyRules, classifyMovement } from './classify.js';
 import { exportBackup, restoreBackup, backupFileName } from './backup.js';
 
 export const IDLE_MS = DEFAULT_LOCK_MINUTES * 60 * 1000; // por defecto se bloquea a los 5 minutos sin tocar la app o en segundo plano; se puede cambiar en Datos
@@ -107,8 +108,24 @@ export class Session {
       data = res.data;
       out.push({ file: f.name, ok: true, format: r.format.id, label: SOURCES[r.format.id] || r.format.label, added: res.summary.added, already: res.summary.already });
     }
-    if (data !== this.data) { this.data = data; await this.save(); }
+    if (data !== this.data) { this.data = { ...data, movements: applyRules(data.movements, data.rules) }; await this.save(); }
     return out;
+  }
+
+  /** Clasifica a mano un movimiento (y los iguales que sigan pendientes). @returns {Promise<number>} cuántos se han clasificado */
+  async classify(key, choice) {
+    this.touch();
+    const r = classifyMovement(this.data, key, choice);
+    this.data = r.data;
+    await this.save();
+    return r.affected;
+  }
+
+  /** @param {Record<string,number>} budget euros al mes por grupo */
+  async setBudget(budget) {
+    this.touch();
+    this.data = { ...this.data, budget: { ...budget }, budgetSavedAt: this.now() };
+    await this.save();
   }
 
   /** @returns {Promise<{name:string, text:string}>} */

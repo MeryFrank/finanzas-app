@@ -1,10 +1,14 @@
 import { SCREENS } from './screens/index.js';
 import { setupScreen, unlockScreen } from './screens/lock.js';
-import { onRoute, currentRoute } from './router.js';
+import { parseHash } from './router.js';
 import { Session } from './core/session.js';
 import { browserStorage } from './storage.js';
 import { freshness } from './core/store.js';
 import { freshnessText } from './core/format.js';
+import { parseBudget } from './screens/presupuesto.js';
+import { eur } from './screens/ui.js';
+import { esc } from './screens/html.js';
+import { EXPENSE_GROUPS } from './core/categories.js';
 
 const ids = SCREENS.map((s) => s.id);
 const $ = (id) => document.getElementById(id);
@@ -13,29 +17,41 @@ nav.innerHTML = SCREENS.map((s) =>
   `<a href="#/${s.id}" data-id="${s.id}"><svg viewBox="0 0 24 24" aria-hidden="true">${s.icon}</svg>${s.label}</a>`).join('');
 
 const session = new Session({ storage: browserStorage });
-const ui = { results: [], busy: '', backupMsg: '', backupError: '', backupReady: null, restoreFile: null, restoreStep: 0, lockError: '' };
+// Estado de las pantallas (solo en memoria). `visit` cambia cada vez que se navega.
+const ui = { visit: 0, results: [], busy: '', backupMsg: '', backupError: '', backupReady: null, restoreFile: null, restoreStep: 0, lockError: '' };
 let pendingBackup = null;
+
+const route = () => parseHash(location.hash, ids);
+const makeCtx = () => ({ session, nowIso: new Date().toISOString(), ui, route: route() });
 
 function render() {
   const app = $('app');
   const open = session.status === 'open';
   app.classList.toggle('locked', !open);
+  $('back').hidden = true; $('above').hidden = true; $('sheet').innerHTML = '';
   if (!open) {
     $('title').textContent = 'Finanzas';
     $('sub').textContent = '';
     $('screen').innerHTML = session.status === 'new' ? setupScreen(ui.lockError) : session.status === 'locked' ? unlockScreen(ui.lockError) : '';
     return;
   }
-  const id = currentRoute(location.hash, ids);
-  const screen = SCREENS.find((s) => s.id === id);
-  const nowIso = new Date().toISOString();
-  $('title').textContent = screen.title;
-  const f = freshnessText(freshness(session.data, id, nowIso), nowIso);
-  $('sub').textContent = f.text;
-  $('sub').classList.toggle('warn', f.stale);
-  $('screen').innerHTML = screen.render({ session, nowIso, ui });
+  const ctx = makeCtx();
+  const screen = SCREENS.find((s) => s.id === ctx.route.id);
+  const out = screen.render(ctx);
+  const r = typeof out === 'string' ? { html: out } : out;
+  const isSub = !!r.back;
+  const f = freshnessText(freshness(session.data, ctx.route.id, ctx.nowIso), ctx.nowIso);
+  if (r.back) { $('back').hidden = false; $('back').href = r.back.href; $('back').innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>${esc(r.back.label)}`; }
+  if (r.above) { $('above').hidden = false; $('above').textContent = r.above; }
+  $('title').textContent = r.title || screen.title;
+  $('sub').textContent = isSub ? (r.below || '') : (r.below || f.text);
+  $('sub').classList.toggle('warn', !isSub && !r.below && f.stale);
+  $('screen').innerHTML = r.html;
+  $('sheet').innerHTML = r.sheet || '';
+  const mo = document.querySelector('.month[aria-pressed="true"]');
+  if (mo) { const row = mo.parentElement; row.scrollLeft = mo.offsetLeft - row.clientWidth / 2 + mo.clientWidth / 2; }
   nav.querySelectorAll('a').forEach((a) => {
-    if (a.dataset.id === id) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    if (a.dataset.id === ctx.route.id) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
 }
 
@@ -50,7 +66,12 @@ document.addEventListener('submit', async (ev) => {
   try {
     if (form.dataset.form === 'setup') { await session.create(v.password, v.confirm); ui.lockError = ''; }
     else if (form.dataset.form === 'unlock') { await session.unlock(v.password); ui.lockError = ''; }
-    else if (form.dataset.form === 'backup') {
+    else if (form.dataset.form === 'budget') {
+      const budget = {};
+      Object.keys(EXPENSE_GROUPS).forEach((g) => { budget[g] = parseBudget(v['b-' + g]); });
+      await session.setBudget(budget);
+      ui.presupuesto = { ...(ui.presupuesto || {}), saved: true };
+    } else if (form.dataset.form === 'backup') {
       ui.backupError = ''; ui.backupMsg = '';
       pendingBackup = await session.makeBackup(v.password);
       ui.backupReady = { name: pendingBackup.name };
@@ -65,6 +86,16 @@ document.addEventListener('submit', async (ev) => {
     else { ui.backupError = fail(e); ui.restoreStep = 0; }
   }
   render();
+});
+
+// El total del presupuesto se actualiza al escribir, sin volver a pintar la pantalla (así no se pierde el foco).
+document.addEventListener('input', (ev) => {
+  const form = ev.target.closest('form[data-form=budget]');
+  if (!form) return;
+  if (ui.presupuesto) ui.presupuesto.saved = false;
+  const total = [...form.querySelectorAll('input[name^="b-"]')].reduce((a, i) => a + parseBudget(i.value), 0);
+  const t = $('budget-total'); if (t) t.textContent = eur(total * 100);
+  const m = form.querySelector('.okmsg'); if (m) m.textContent = '';
 });
 
 document.addEventListener('change', async (ev) => {
@@ -87,6 +118,14 @@ document.addEventListener('change', async (ev) => {
 });
 
 document.addEventListener('click', async (ev) => {
+  const act = ev.target.closest('[data-act]');
+  if (act && session.status === 'open') {
+    const screen = SCREENS.find((s) => s.id === route().id);
+    try {
+      if (screen.act && await screen.act(act.dataset.act, act, makeCtx())) render();
+    } catch (e) { ui.backupError = fail(e); render(); }
+    return;
+  }
   const b = ev.target.closest('[data-action]');
   if (!b) return;
   if (b.dataset.action === 'lock') { session.lock(); render(); }
@@ -106,7 +145,7 @@ document.addEventListener('click', async (ev) => {
 setInterval(() => { if (session.checkIdle()) render(); }, 15000);
 document.addEventListener('visibilitychange', () => { if (session.visibility(document.hidden)) render(); });
 
-onRoute(ids, () => render());
+addEventListener('hashchange', () => { ui.visit++; render(); });
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); // pide al navegador que no borre los datos
 session.start().then(render);
 
