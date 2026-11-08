@@ -1,5 +1,5 @@
 import { esc } from './html.js';
-import { SOURCES } from '../core/store.js';
+import { SOURCES, LOCK_OPTIONS } from '../core/store.js';
 import { shortDate, importMessage } from '../core/format.js';
 
 /**
@@ -44,6 +44,13 @@ export function renderDatos(ctx) {
   </form>
   ${ui.backupMsg ? `<p class="okmsg" role="status">${esc(ui.backupMsg)}</p>` : ''}
   ${ui.backupError ? `<p class="error" role="alert">${esc(ui.backupError)}</p>` : ''}
+</section>
+<section class="card stack">
+  <h2>Seguridad</h2>
+  <label>Bloquear la app tras
+    <select data-action="lock-minutes">${LOCK_OPTIONS.map((m) => `<option value="${m}"${m === d.settings.lockMinutes ? ' selected' : ''}>${m === 60 ? '1 hora' : m === 1 ? '1 minuto' : m + ' minutos'}</option>`).join('')}</select>
+  </label>
+  <p class="note">*sin usar la app, o con la app en segundo plano; tus datos están cifrados en este dispositivo y no se envían a ningún sitio</p>
 </section>
 <section class="card stack">
   <h2>Actividad</h2>

@@ -78,6 +78,9 @@ document.addEventListener('change', async (ev) => {
       ui.results = await session.importFiles(await Promise.all(files.map(async (f) => ({ name: f.name, text: await f.text() }))));
     } catch (e) { ui.results = [{ file: '', ok: false, error: fail(e) }]; }
     ui.busy = ''; render();
+  } else if (el.dataset.action === 'lock-minutes') {
+    try { await session.setLockMinutes(Number(el.value)); } catch (e) { ui.backupError = fail(e); }
+    render();
   } else if (el.dataset.action === 'pick-restore') {
     ui.restoreFile = el.files[0] || null; ui.restoreStep = 0; ui.backupError = ''; ui.backupMsg = ''; render();
   }
@@ -104,6 +107,7 @@ setInterval(() => { if (session.checkIdle()) render(); }, 15000);
 document.addEventListener('visibilitychange', () => { if (session.visibility(document.hidden)) render(); });
 
 onRoute(ids, () => render());
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); // pide al navegador que no borre los datos
 session.start().then(render);
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

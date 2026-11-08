@@ -4,6 +4,10 @@
 export const DATA_VERSION = 1;
 export const STALE_DAYS = 30;
 
+/** Opciones de bloqueo automático (minutos) y valor por defecto. */
+export const LOCK_OPTIONS = [1, 2, 5, 15, 30, 60];
+export const DEFAULT_LOCK_MINUTES = 5;
+
 /** Fuentes de datos (una por tipo de CSV). */
 export const SOURCES = {
   'revolut-account': 'Revolut - Cuenta bancaria',
@@ -36,6 +40,7 @@ export const SCREEN_SOURCES = {
  * @property {{pattern:string,categoryId:string}[]} rules reglas que ha aprendido la app
  * @property {{tipos:Record<string,string>, newCats:any[]}} categories ajustes de categorías
  * @property {Record<string,{lastImportAt:string,lastDataDate:string|null}>} imports
+ * @property {{lockMinutes:number}} settings bloqueo automático: minutos sin usar la app (también en segundo plano)
  * @property {{file:string,newRows:number,at:string}[]} activity solo nombre del archivo y filas, nunca contenido
  */
 
@@ -50,6 +55,7 @@ export const emptyData = () => ({
   rules: [],
   categories: { tipos: {}, newCats: [] },
   imports: {},
+  settings: { lockMinutes: DEFAULT_LOCK_MINUTES },
   activity: []
 });
 
@@ -59,6 +65,7 @@ export function validateData(d) {
     ['movements', 'trades', 'investmentEvents', 'fundEvents', 'rules', 'activity'].every((k) => Array.isArray(d[k])) &&
     d.portfolio && Array.isArray(d.portfolio.positions) && d.imports && typeof d.imports === 'object' && d.categories;
   if (!ok) throw new Error('Los datos de la copia no tienen el formato esperado');
+  if (!d.settings || !LOCK_OPTIONS.includes(d.settings.lockMinutes)) d.settings = { lockMinutes: DEFAULT_LOCK_MINUTES }; // datos guardados antes de existir los ajustes
   return d;
 }
 

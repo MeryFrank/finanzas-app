@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Session, IDLE_MS, BACKGROUND_MS } from '../src/core/session.js';
+import { Session, IDLE_MS } from '../src/core/session.js';
 import { memoryStorage } from '../src/storage.js';
 import { freshness } from '../src/core/store.js';
 import { freshnessText, shortDate, importMessage } from '../src/core/format.js';
@@ -57,9 +57,9 @@ test('bloqueo automático por inactividad y por segundo plano', async () => {
   assert.equal(s.status, 'locked');
 
   await s.unlock('contraseña-larga');
-  s.visibility(true); clock.t += BACKGROUND_MS - 1000;
+  s.visibility(true); clock.t += IDLE_MS - 1000;
   assert.equal(s.visibility(false), false);
-  s.visibility(true); clock.t += BACKGROUND_MS + 1000;
+  s.visibility(true); clock.t += IDLE_MS + 1000;
   assert.equal(s.visibility(false), true);
   assert.equal(s.status, 'locked');
 });
@@ -106,4 +106,31 @@ test('línea "actualizado el": sin datos, con datos y con aviso', async () => {
   assert.equal(late.stale, true);
   assert.match(late.text, /hay datos sin actualizar/);
   assert.equal(shortDate('2025-03-02', now()), '2 mar 2025');
+});
+
+test('el tiempo de bloqueo se puede elegir, se guarda cifrado y se aplica', async () => {
+  const { s, clock, storage } = mk();
+  await s.start(); await s.create('contraseña-larga', 'contraseña-larga');
+  assert.equal(s.data.settings.lockMinutes, 5);
+  await assert.rejects(() => s.setLockMinutes(7), /no válido/);
+  await s.setLockMinutes(15);
+  clock.t += 10 * 60000; s.touch(); clock.t += 10 * 60000;
+  assert.equal(s.checkIdle(), false); // 10 min < 15
+  clock.t += 6 * 60000;
+  assert.equal(s.checkIdle(), true);
+  const s2 = new Session({ storage, now: s.now, iterations: 1000 });
+  await s2.start(); await s2.unlock('contraseña-larga');
+  assert.equal(s2.data.settings.lockMinutes, 15); // persiste
+  await s2.setLockMinutes(1);
+  s2.visibility(true); clock.t += 61000;
+  assert.equal(s2.visibility(false), true); // 1 min en segundo plano
+});
+
+test('datos guardados antes de existir los ajustes siguen abriendo con el valor por defecto', async () => {
+  const { s, storage } = mk();
+  await s.start(); await s.create('contraseña-larga', 'contraseña-larga');
+  delete s.data.settings; await s.save(); s.lock();
+  const s2 = new Session({ storage, iterations: 1000 });
+  await s2.start(); await s2.unlock('contraseña-larga');
+  assert.equal(s2.data.settings.lockMinutes, 5);
 });
