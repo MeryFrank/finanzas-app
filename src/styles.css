@@ -31,3 +31,23 @@ input, select, textarea, button { font: inherit; font-size: 16px; }
 }
 .nav a[aria-current="page"] { color: var(--primary); background: var(--primary-soft); font-weight: 600; }
 .nav svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.stack { display: flex; flex-direction: column; gap: 10px; }
+h2 { margin: 0; font-size: 16px; font-weight: 600; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+input[type="password"], input[type="text"] { min-height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; color: var(--text); background: #fff; }
+.btn { min-height: 48px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; text-align: center; }
+.btn.secondary { background: #fff; color: var(--primary); border: 1px solid var(--line); }
+.btn.danger { background: var(--danger); }
+.btn.file { font-size: 16px; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.list li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #e6f4ee; font-size: 14px; }
+.list li:first-child { border-top: 0; }
+.list li span:last-child { text-align: right; font-size: 12px; }
+.results li { display: block; }
+.results .bad, .error { color: var(--danger); }
+.results .ok, .okmsg { color: var(--primary); }
+.error, .okmsg, .warn { font-size: 13px; margin: 0; }
+.warn, .sub.warn { color: #9a6b00; }
+.locked .nav { display: none; }
+.locked .screen { justify-content: center; }
