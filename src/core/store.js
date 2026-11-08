@@ -47,6 +47,7 @@ export const SCREEN_SOURCES = {
  * @property {{date:string,valueCents:number,positions:{isin:string,name:string,quantityE4:number,valueCents:number}[]}[]} portfolioHistory una foto por fecha de importación o de cambio de precios (el historial se construye con cada importación)
  * @property {Record<string,number>} prices precios puestos a mano (isin -> euros por participación); se borran al importar una foto nueva
  * @property {Record<string,string>} assetTypes tipo de activo elegido por la usuaria (isin -> tipo)
+ * @property {{age:number|null, ageYear:number|null, retirementMonthly:number, taxPct:number, ipc:number}} independence edad (y año en que se indicó), retirada mensual neta deseada (€), impuestos sobre retiradas (%) e IPC (%)
  * @property {{targetFixedPct:number, monthlyEur:number}} portfolioSettings objetivo de renta fija (%) y aportación mensual a la cartera (euros; 0 = sin definir)
  * @property {number} savingsTarget objetivo mensual de ahorro en euros; 0 = sin objetivo
  * @property {Record<string,string>} names nombres que ha puesto la usuaria a movimientos (clave del movimiento -> nombre)
@@ -74,6 +75,7 @@ export const emptyData = () => ({
   prices: {},
   assetTypes: {},
   portfolioSettings: { targetFixedPct: 10, monthlyEur: 0 },
+  independence: { age: null, ageYear: null, retirementMonthly: 1500, taxPct: 15, ipc: 2.5 },
   incomeTarget: {},
   incomeTargetSavedAt: null,
   settings: { lockMinutes: DEFAULT_LOCK_MINUTES },
@@ -94,6 +96,7 @@ export function validateData(d) {
   if (!d.prices || typeof d.prices !== 'object') d.prices = {};
   if (!d.assetTypes || typeof d.assetTypes !== 'object') d.assetTypes = {};
   if (!d.portfolioSettings || typeof d.portfolioSettings !== 'object') d.portfolioSettings = { targetFixedPct: 10, monthlyEur: 0 };
+  d.independence = { age: null, ageYear: null, retirementMonthly: 1500, taxPct: 15, ipc: 2.5, ...(d.independence || {}) };
   if (typeof d.savingsTarget !== 'number' || !(d.savingsTarget >= 0)) d.savingsTarget = 0;
   if (!d.names || typeof d.names !== 'object') d.names = {};
   if (!d.settings || !LOCK_OPTIONS.includes(d.settings.lockMinutes)) d.settings = { lockMinutes: DEFAULT_LOCK_MINUTES }; // datos guardados antes de existir los ajustes

@@ -27,6 +27,11 @@ export function renderDatos(ctx) {
   <a class="link" href="#/datos/precios" style="min-height:44px;display:flex;align-items:center">Editar precios a mano ›</a>
 </section>
 <section class="card stack">
+  <h2>Independencia</h2>
+  <label class="obj-row">IPC anual<span class="bud-in"><input id="ipc" type="text" inputmode="decimal" autocomplete="off" data-change="save-ipc" value="${String(d.independence.ipc).replace('.', ',')}" style="width:80px" aria-label="IPC anual en porcentaje">%</span></label>
+  <p class="note">*la inflación del último año; se usa en Meta para pasar la rentabilidad a euros de hoy. Actualízala una vez al año</p>
+</section>
+<section class="card stack">
   <h2>Importar CSV</h2>
   <p class="note">*elige uno o varios archivos exportados desde la app de cada plataforma; se reconocen solos y solo entra lo nuevo</p>
   <label class="btn file">Elegir archivos<input type="file" accept=".csv,text/csv" multiple data-action="import" hidden></label>
@@ -70,6 +75,7 @@ export function renderDatos(ctx) {
 }
 
 export async function actDatos(name, el, ctx) {
+  if (name === 'save-ipc') { await ctx.session.setIndependence({ ipc: parseFloat(document.getElementById('ipc').value.replace(',', '.')) }); return true; }
   if (name !== 'save-pf') return false;
   await ctx.session.setPortfolioSettings({ targetFixedPct: document.getElementById('pf-fixed').value.replace(',', '.'), monthlyEur: document.getElementById('pf-month').value.replace(',', '.') });
   return true;

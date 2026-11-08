@@ -7,6 +7,7 @@ import { renderCategorias, actCategorias } from './categorias.js';
 import { renderImportados, actImportados } from './importados.js';
 import { renderCartera, renderPosiciones, renderPosicion, actCartera, actPosicion } from './cartera.js';
 import { renderPrecios } from './precios.js';
+import { renderMeta, actMeta } from './meta.js';
 import { renderAhorro, actAhorro } from './ahorro.js';
 import { renderIngresos, actIngresos } from './ingresos.js';
 import { renderObjetivo, actObjetivo } from './objetivo.js';
@@ -29,7 +30,7 @@ export const SCREENS = [
   act: actAhorro },
   { id: 'cartera', label: 'Cartera', title: 'Cartera', icon: '<path d="M12 3v9h9"/><circle cx="12" cy="12" r="9"/>', render: (ctx) => (ctx ? ({ posiciones: renderPosiciones, posicion: renderPosicion }[ctx.route.sub] || renderCartera)(ctx) : pending('posiciones, rentabilidad y peso frente al objetivo')),
   act: (name, el, ctx) => (ctx.route.sub === 'posicion' ? actPosicion : actCartera)(name, el, ctx) },
-  { id: 'meta', label: 'Meta', title: 'Independencia', icon: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>', render: () => pending('fecha de independencia, escenarios Real y Prueba') },
+    { id: 'meta', label: 'Meta', title: 'Independencia', icon: '<path d="M5 21V4"/><path d="M5 4h12l-2 4 2 4H5"/>', render: (ctx) => (ctx ? renderMeta(ctx) : pending('fecha de independencia, escenarios Real y Prueba, capital necesario y tasa de retiro segura')), act: actMeta },
   { id: 'datos', label: 'Datos', title: 'Datos', icon: '<path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>', render: (ctx) => (ctx ? (ctx.route.sub === 'categorias' ? renderCategorias(ctx) : ctx.route.sub === 'movimientos' ? renderImportados(ctx) : ctx.route.sub === 'precios' ? renderPrecios(ctx) : renderDatos(ctx)) : pending('importar CSV, copia de seguridad y ajustes')),
   act: (name, el, ctx) => (ctx.route.sub === 'categorias' ? actCategorias(name, el, ctx) : ctx.route.sub === 'movimientos' ? actImportados(name, el, ctx) : ctx.route.sub ? false : actDatos(name, el, ctx)) }
 ];

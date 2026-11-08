@@ -161,6 +161,21 @@ export class Session {
     await this.save();
   }
 
+  /** Ajustes de independencia; solo se guardan los campos válidos que se pasen. */
+  async setIndependence(c) {
+    this.touch();
+    const cur = this.data.independence;
+    const num = (v, lo, hi) => (Number.isFinite(v) && v >= lo && v <= hi ? v : undefined);
+    const age = num(c.age, 16, 89);
+    const next = { ...cur };
+    if (age !== undefined) { next.age = Math.round(age); next.ageYear = new Date(this.now()).getFullYear(); }
+    const ret = num(c.retirementMonthly, 100, 100000); if (ret !== undefined) next.retirementMonthly = Math.round(ret);
+    const tax = num(c.taxPct, 0, 60); if (tax !== undefined) next.taxPct = Math.round(tax);
+    const ipc = num(c.ipc, 0, 20); if (ipc !== undefined) next.ipc = Math.round(ipc * 10) / 10;
+    this.data = { ...this.data, independence: next };
+    await this.save();
+  }
+
   /** @param {number} euros objetivo mensual de ahorro; 0 o vacío = sin objetivo */
   async setSavingsTarget(euros) {
     this.touch();

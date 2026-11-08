@@ -237,3 +237,17 @@ input[type=range] { width: 100%; min-height: 44px; accent-color: #047857; }
 .pos-v { display: flex; align-items: center; gap: 6px; text-align: right; } .pos-v > span:first-child { display: flex; flex-direction: column; }
 .kpi-n.sm { font-size: 15px; }
 .pm-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.9fr; gap: 4px; padding: 8px 0; border-top: 1px solid #e6f4ee; font-size: 12px; text-align: right; } .pm-row span:first-child { text-align: left; }
+
+/* ---- Meta ---- */
+.meta-hero { border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.mh-l { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.mh-d { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; }
+.meta-hero .info-btn { color: inherit; }
+.lbl { display: flex; align-items: center; gap: 6px; }
+.btn.ghost { background: #fff; color: #355a4f; border: 1px solid #cfe8de; }
+.xrow { background: #ecfdf5; border-radius: 10px; padding: 0 6px 0 12px; min-height: 44px; }
+.icon-btn { width: 44px; height: 44px; border: 0; background: transparent; color: #355a4f; font-size: 16px; cursor: pointer; }
+.draft-wrap { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 20px 10px; pointer-events: none; }
+.draft { pointer-events: auto; background: #fdf1cf; border: 1px solid #ebb53a; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; color: #5c4308; font-size: 13px; line-height: 1.45; box-shadow: 0 4px 16px rgba(2,44,34,0.2); }
+.draft-b { display: flex; gap: 8px; } .draft-b .btn { flex: 1; }
+button.link-card { text-align: left; width: 100%; font: inherit; cursor: pointer; }
