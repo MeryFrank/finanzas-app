@@ -92,7 +92,7 @@ export function renderMeta(ctx) {
   const draft = hasDraft ? `<div class="draft" role="alertdialog" aria-label="Confirmar cambio en el escenario real"><span><strong>¿Estás segura?</strong> Esto cambia las proyecciones actuales reales. Este cambio no se puede deshacer.</span><div class="draft-b"><button class="btn ghost" data-act="m-cancel">Cancelar</button><button class="btn" data-act="m-confirm">Sí, cambiar</button></div></div>` : '';
 
   return {
-    below: real ? 'Escenario real' : 'Escenario de prueba',
+    above: real ? 'Escenario real' : 'Escenario de prueba',
     sheet: draft ? `<div class="draft-wrap">${draft}</div>${sheetHtml}` : sheetHtml,
     html: `<section class="meta-hero" style="${hero}"><span class="mh-l" style="color:${subCol}">Fecha de independencia${infoBtn('fecha', 'Qué es la fecha de independencia')}</span><span class="mh-d">${dateText}</span><span style="font-size:13px;color:${subCol}">${esc(subText)}</span></section>
 <button class="card link-card" data-act="info" data-key="calc"><span style="color:#2c4b7a;font-weight:600;font-size:13px">Cómo se calcula la independencia financiera</span><span aria-hidden="true">›</span></button>
@@ -101,12 +101,12 @@ export function renderMeta(ctx) {
 <div class="card k"><span class="kt">Invertido hoy</span><span class="kv">${fmt(p.start)}</span><span class="note">*no incluye el ahorro en cuenta</span></div></div>
 <section class="card k"><span class="kt">Tasa de retiro segura (calculada)${infoBtn('retiro', 'Qué es la tasa de retiro segura')}</span><span class="kv">${comma((wNow * 100).toFixed(1))} % al año</span><span class="note">*calculada para no quedarte sin dinero antes de los 90 años; al mes, ${comma((wNow * 100 / 12).toFixed(2))} %</span><span class="note">*máximo mensual con tu inversión de hoy: ${fmt(maxToday)}${reached !== null ? `; en tu fecha de independencia: ${fmt(maxIndep)}` : ''}</span></section>
 <section class="card stack-sm"><span class="card-title">Capital invertido proyectado${infoBtn('grafico', 'Cómo leer el gráfico')}</span>
-<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Capital invertido proyectado a 40 años frente al capital necesario" style="display:block;height:150px;overflow:visible">${[37.5, 75, 112.5].map((y) => `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#e6f4ee"/>`).join('')}<line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="#cfe8de"/><polygon points="${line} ${W},${H} 0,${H}" fill="#2e8a47" fill-opacity="0.14"/><polyline points="${line}" fill="none" stroke="#2e8a47" stroke-width="2.5" stroke-linejoin="round"/><polyline points="${pts(needS).join(' ')}" fill="none" stroke="#2c4b7a" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/>${marker}</svg>
+<div data-act="m-tap" style="cursor:pointer;touch-action:manipulation"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Capital invertido proyectado a 40 años frente al capital necesario" style="display:block;height:150px;overflow:visible">${[37.5, 75, 112.5].map((y) => `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#e6f4ee"/>`).join('')}<line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="#cfe8de"/><polygon points="${line} ${W},${H} 0,${H}" fill="#2e8a47" fill-opacity="0.14"/><polyline points="${line}" fill="none" stroke="#2e8a47" stroke-width="2.5" stroke-linejoin="round"/><polyline points="${pts(needS).join(' ')}" fill="none" stroke="#2c4b7a" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/>${marker}</svg></div>
 <div class="xl">${[0, 10, 20, 30, 40].map((k) => `<span>${y0 + k}</span>`).join('')}</div>
 <input type="range" aria-label="Elegir año del gráfico" min="0" max="${YEARS}" step="1" value="${pt ?? 0}" data-change="m-pt">
-${pt == null ? '<div class="note">*mueve el control para ver los valores de un año</div>' : `<div class="tap"><strong>${y0 + pt}</strong><br>Tu inversión: <strong>${fmt(series[pt])}</strong><br>Capital necesario: <strong>${fmt(needS[pt])}</strong><br>Tasa de retiro segura: <strong>${comma((res.w(pt * 12) * 100).toFixed(1))} % al año</strong><br>Máximo que podrías retirar: <strong>${fmt(res.maxMonthly(series[pt], pt * 12))} al mes</strong></div>`}
-<div class="legend"><span><i style="background:#2e8a47"></i>Tu inversión</span><span><i style="background:#2c4b7a"></i>Capital necesario</span></div></section>
-<section class="card stack"><span class="card-title">Ajustes</span>${rows}</section>
+${pt == null ? '<div class="note">*toca el gráfico o mueve el control para ver los valores de un año</div>' : `<div class="tap"><strong>${y0 + pt}</strong><br>Tu inversión: <strong>${fmt(series[pt])}</strong><br>Capital necesario: <strong>${fmt(needS[pt])}</strong><br>Tasa de retiro segura: <strong>${comma((res.w(pt * 12) * 100).toFixed(1))} % al año</strong><br>Máximo que podrías retirar: <strong>${fmt(res.maxMonthly(series[pt], pt * 12))} al mes</strong></div>`}
+<div class="legend"><span><i class="ln" style="background:#2e8a47"></i>Tu inversión</span><span><i class="ln dash" style="border-color:#2c4b7a"></i>Capital necesario</span></div></section>
+<section class="card stack"><span class="card-title">Ajustes</span><div class="adj">${rows}</div></section>
 ${extraCard}
 <p class="note">*escenario real: rentabilidad, inflación e inversión mensual vienen de la app; escenario de prueba: todo se puede cambiar para jugar, incluidos los ingresos extra. Todo en euros de hoy, con la retirada mensual deseada neta</p>`
   };
@@ -120,6 +120,7 @@ export async function actMeta(name, el, ctx) {
   else if (name === 'close-sheet') st.info = null;
   else if (name === 'm-esc') { st.esc = el.dataset.id; st.dret = null; st.dtax = null; st.p = null; st.pt = null; }
   else if (name === 'm-pt') st.pt = Number(el.value);
+  else if (name === 'm-tap') { const b = el.getBoundingClientRect(); const x = ((window.event && window.event.clientX) - b.left) / b.width; st.pt = Math.max(0, Math.min(YEARS, Math.round(x * YEARS))); }
   else if (name === 'm-age') await ctx.session.setIndependence({ age: num() });
   else if (name === 'm-set') {
     const k = el.dataset.key; const v = num();

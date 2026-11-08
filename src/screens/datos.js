@@ -1,5 +1,5 @@
 import { esc } from './html.js';
-import { infoBtn, infoSheet } from './ui.js';
+import { infoBtn, infoSheet, sheet } from './ui.js';
 import { nextReview } from './presupuesto.js';
 import { SOURCES, LOCK_OPTIONS } from '../core/store.js';
 import { shortDate, importMessage } from '../core/format.js';
@@ -18,6 +18,19 @@ export const DATOS_INFO = {
   registro: { t: 'Registro de actividad', what: 'Una lista con lo que entra en la app: los archivos importados (solo el nombre y cuántas filas eran nuevas, nunca el contenido).', how: '' }
 };
 
+const bkSheet = (ui, d) => {
+  const msg = `${ui.backupMsg ? `<p class="okmsg" role="status">${esc(ui.backupMsg)}</p>` : ''}${ui.backupError ? `<p class="error" role="alert">${esc(ui.backupError)}</p>` : ''}`;
+  if (ui.datosSheet === 'export') {
+    return sheet('Exportar copia', `<p class="sheet-text">Se cifra con la contraseña que elijas y se descarga como archivo. Guárdalo en iCloud Drive; sin la contraseña no se puede abrir.</p>
+<form class="stack" data-form="backup"><label>Contraseña de la copia<input name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="btn" type="submit">Crear copia</button></form>
+${ui.backupReady ? `<button class="btn secondary" data-action="save-backup">Guardar «${esc(ui.backupReady.name)}»</button>` : ''}${msg}`, { label: 'Exportar copia' });
+  }
+  return sheet('Restaurar copia', `<p class="sheet-text">Elige el archivo de la copia y escribe su contraseña. Sustituye todos los datos actuales.</p>
+<form class="stack" data-form="restore"><label class="btn secondary file">Elegir copia para restaurar<input type="file" accept=".finanzas,application/json" data-action="pick-restore" hidden></label>
+${ui.restoreFile ? `<p class="note">Archivo: ${esc(ui.restoreFile.name)}</p><label>Contraseña de la copia<input name="password" type="password" autocomplete="current-password" required></label>
+${ui.restoreStep === 1 ? '<p class="warn">Esto sustituye todos los datos actuales. ¿Estás segura?</p><button class="btn danger" type="submit">Sí, restaurar</button>' : '<button class="btn" type="submit">Restaurar</button>'}` : ''}</form>${msg}`, { label: 'Restaurar copia' });
+};
+
 export function renderDatos(ctx) {
   const { session, nowIso, ui } = ctx;
   const d = session.data;
@@ -28,7 +41,9 @@ export function renderDatos(ctx) {
     const detail = i ? `actualizado el ${shortDate(i.lastImportAt, nowIso)}${i.lastDataDate ? ` · último dato ${shortDate(i.lastDataDate, nowIso)}` : ''}` : 'sin importar';
     return `<li><span>${esc(label)}</span><span class="${old ? 'warn' : 'note'}">${esc(detail)}</span></li>`;
   }).join('');
-  const activity = d.activity.slice(0, 8).map((a) => `<li><span>${esc(a.file)}</span><span class="note">${a.newRows} nuevos · ${esc(shortDate(a.at, nowIso))}</span></li>`).join('') || '<li><span class="note">Todavía no has importado nada</span></li>';
+  const hhmm = (iso) => new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const shown = ui.logAll ? d.activity : d.activity.slice(0, 6);
+  const activity = shown.map((a) => `<li class="act"><span class="act-t">${esc(a.file)}</span><span class="note">${esc(shortDate(a.at, nowIso))}, ${hhmm(a.at)} · Importación · ${a.newRows} ${a.newRows === 1 ? 'nuevo' : 'nuevos'}</span></li>`).join('') || '<li class="act"><span class="note">Todavía no has importado nada</span></li>';
   const month = nowIso.slice(0, 7);
   const checks = d.monthly.month === month ? d.monthly.checks : {};
   const ITEMS = [['c1', 'Importar los CSV del mes'], ['c2', 'Revisar los movimientos sin clasificar'], ['c3', 'Actualizar los precios de la cartera'], ['c4', 'Exportar la copia a iCloud Drive'], ['c5', 'Revisar el presupuesto de gasto (cada 6 meses)']];
@@ -42,7 +57,7 @@ export function renderDatos(ctx) {
   const sec = (t) => `<div class="sec-l"><span>${t}</span><span class="sec-line"></span></div>`;
   return {
     above: 'Tus datos se quedan en este móvil',
-    sheet: ui.datosInfo ? infoSheet(DATOS_INFO[ui.datosInfo]) : '',
+    sheet: ui.datosSheet ? bkSheet(ui, d) : ui.datosInfo ? infoSheet(DATOS_INFO[ui.datosInfo]) : '',
     html: `
 ${sec('Cada mes')}
 <section class="card stack-sm">
@@ -52,55 +67,43 @@ ${sec('Cada mes')}
 </section>
 ${sec('Parámetros')}
 <section class="card stack-sm"><div class="card-title">IPC anual${info('ipc', 'Qué es el IPC anual')}</div>
-  <label class="obj-row"><span>IPC del último año (país de residencia)</span><span class="bud-in"><input id="ipc" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" data-change="save-ipc" value="${String(d.independence.ipc).replace('.', ',')}" aria-label="IPC anual en porcentaje">%</span></label>
+  <label class="obj-row"><span>IPC de ${nowIso.slice(0, 4)} (país de residencia)</span><span class="bud-in"><input id="ipc" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" data-change="save-ipc" value="${String(d.independence.ipc).replace('.', ',')}" aria-label="IPC anual en porcentaje">%</span></label>
   <div class="note">*se escribe a mano una vez al año; alimenta la inflación del escenario real en Meta</div></section>
 <section class="card stack-sm"><div class="card-title">Objetivo de cartera${info('objetivo', 'Qué es el objetivo de cartera')}</div>
   <label class="obj-row"><span>Renta fija</span><span class="bud-in"><input id="pf-fixed" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" data-change="save-pf" value="${tgt}" aria-label="Objetivo de renta fija en porcentaje">%</span></label>
   <div class="obj-row"><span>Renta variable</span><strong>${100 - tgt} %</strong></div>
-  <label class="obj-row"><span>Aportación mensual</span><span class="bud-in"><input id="pf-month" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" data-change="save-pf" value="${d.portfolioSettings.monthlyEur || ''}" placeholder="Sin definir" aria-label="Aportación mensual a la cartera en euros">€</span></label>
+  <label class="obj-row"><span>Aportación mensual</span><span class="bud-in"><input id="pf-month" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" data-change="save-pf" value="${d.portfolioSettings.monthlyEur || ''}" placeholder="0" aria-label="Aportación mensual a la cartera en euros">€</span></label>
   <div class="note">*el resto hasta 100 % es renta variable; la aportación mensual sirve para calcular en cuántos meses llegas al objetivo y la fecha de independencia</div></section>
 <a class="card link-card" href="#/datos/categorias"><span><strong>Categorías</strong><span class="note">*grupos, subcategorías y tipo de gasto; aquí se crean y se cambian</span></span><span aria-hidden="true">›</span></a>
 ${sec('Datos')}
 <section class="card stack">
   <div class="card-title">Importar CSV${info('importar', 'Qué es importar un CSV')}</div>
-  ${[['revolut-account', 'Revolut - Cuenta bancaria'], ['revolut-card', 'Revolut - Tarjeta de crédito'], ['revolut-fund', 'Revolut - Fondo monetario'], ['degiro-portfolio', 'DEGIRO - Posiciones'], ['degiro-transactions', 'DEGIRO - Compras'], ['degiro-statement', 'DEGIRO - Estado de cuenta']].map(([id, n]) => { const i = d.imports[id]; return `<div class="src-row"><span class="src-n">${n}</span><span class="note">${i ? `Último: ${esc(shortDate(i.lastImportAt, nowIso))}${stale(id) ? ' <span class="pill-warn">Desactualizado</span>' : ''}` : 'sin importar'}</span></div>`; }).join('')}
-  <label class="btn file">Elegir archivos<input type="file" accept=".csv,text/csv" multiple data-action="import" hidden></label>
+  ${[['revolut-account', 'Revolut - Cuenta bancaria'], ['revolut-card', 'Revolut - Tarjeta de crédito'], ['revolut-fund', 'Revolut - Fondo monetario'], ['degiro-portfolio', 'DEGIRO - Posiciones'], ['degiro-transactions', 'DEGIRO - Compras'], ['degiro-statement', 'DEGIRO - Estado de cuenta']].map(([id, n]) => { const i = d.imports[id]; return `<div class="src-row"><span class="src-m"><span class="src-n">${n}</span><span class="note">${i ? `Último: ${esc(shortDate(i.lastImportAt, nowIso))}` : 'sin importar'}</span>${stale(id) ? '<span class="pill-warn">Desactualizado</span>' : ''}</span><label class="btn-o">Elegir archivo<input type="file" accept=".csv,text/csv" multiple data-action="import" aria-label="Elegir archivo para ${n}" hidden></label></div>`; }).join('')}
   ${ui.busy ? `<p class="note">${esc(ui.busy)}</p>` : ''}
   ${results ? `<ul class="list results" aria-live="polite">${results}</ul>` : ''}
-  <div class="note">*se abre el selector de archivos del iPhone (Archivos, iCloud Drive o Descargas); la app reconoce cada archivo por su cabecera y solo entra lo nuevo</div>
-  <div class="sub-box"><div class="card-title">Actualizar precios${info('precios', 'Cómo se actualizan los precios')}</div><div class="note">*al importar el CSV de DEGIRO los precios se actualizan solos</div><a class="link" href="#/datos/precios" style="min-height:44px;display:flex;align-items:center">Editar precios a mano ›</a></div>
+  <div class="note">*se abre el selector de archivos del iPhone (Archivos, iCloud Drive o Descargas); la app reconoce cada archivo por su cabecera, así que da igual el botón que uses, y puedes elegir varios a la vez</div>
+  <div class="sub-box"><div class="card-title">Actualizar precios${info('precios', 'Cómo se actualizan los precios')}</div><div class="note">*al importar el CSV de DEGIRO los precios se actualizan solos</div><a class="btn-o block" href="#/datos/precios">Editar precios a mano</a></div>
 </section>
 <a class="card link-card" href="#/datos/movimientos"><span><strong>Movimientos importados</strong><span class="note">*todo lo guardado, también traspasos y ahorro</span></span><span aria-hidden="true">›</span></a>
 ${sec('Protección')}
-<section class="card stack">
-  <div class="card-head"><span class="card-title">Copia de seguridad${info('copia', 'Qué es la copia de seguridad')}</span><span class="${bkOld ? 'pill-warn' : 'pill-ok'}">${bkOld ? 'Hace falta' : 'Al día'}</span></div>
-  <p class="note">Última copia cifrada: ${d.lastBackupAt ? esc(shortDate(d.lastBackupAt, nowIso)) : 'ninguna todavía'}. Se descarga como archivo (guárdalo en iCloud Drive) y solo se abre con tu contraseña.</p>
-  <form class="stack" data-form="backup">
-    <label>Contraseña de la copia<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
-    <button class="btn" type="submit">Crear copia</button>
-  </form>
-  ${ui.backupReady ? `<button class="btn secondary" data-action="save-backup">Guardar «${esc(ui.backupReady.name)}»</button>` : ''}
-  <form class="stack" data-form="restore">
-    <label class="btn secondary file">Elegir copia para restaurar<input type="file" accept=".finanzas,application/json" data-action="pick-restore" hidden></label>
-    ${ui.restoreFile ? `<p class="note">Archivo: ${esc(ui.restoreFile.name)}</p>
-    <label>Contraseña de la copia<input name="password" type="password" autocomplete="current-password" required></label>
-    ${ui.restoreStep === 1 ? '<p class="warn">Esto sustituye todos los datos actuales. ¿Estás segura?</p><button class="btn danger" type="submit">Sí, restaurar</button>' : '<button class="btn" type="submit">Restaurar</button>'}` : ''}
-  </form>
-  ${ui.backupMsg ? `<p class="okmsg" role="status">${esc(ui.backupMsg)}</p>` : ''}
-  ${ui.backupError ? `<p class="error" role="alert">${esc(ui.backupError)}</p>` : ''}
-</section>
-<section class="card stack">
+<section class="card stack-sm">
   <div class="card-title">Seguridad</div>
-  <label><span class="lbl">Bloqueo automático${info('bloqueo', 'Qué es el bloqueo automático')}</span>
-    <select data-action="lock-minutes">${LOCK_OPTIONS.map((m) => `<option value="${m}"${m === d.settings.lockMinutes ? ' selected' : ''}>${m === 60 ? '1 hora' : m === 1 ? '1 minuto' : m + ' minutos'}</option>`).join('')}</select>
+  <label class="obj-row"><span class="lbl">Bloqueo automático${info('bloqueo', 'Qué es el bloqueo automático')}</span>
+    <select data-action="lock-minutes" style="width:auto">${LOCK_OPTIONS.map((m) => `<option value="${m}"${m === d.settings.lockMinutes ? ' selected' : ''}>${m === 60 ? '1 hora' : m === 1 ? '1 minuto' : m + ' minutos'}</option>`).join('')}</select>
   </label>
-  <p class="note">*sin usar la app, o con la app en segundo plano; tus datos están cifrados en este dispositivo y no se envían a ningún sitio</p>
+  <p class="note">*cifrado AES-256; no se guarda ningún número de cuenta, solo saldos y movimientos</p>
+</section>
+<section class="card stack-sm">
+  <div class="card-head"><span class="card-title">Copia de seguridad${info('copia', 'Qué es la copia de seguridad')}</span><span class="${bkOld ? 'pill-warn' : 'pill-ok'}">${bkOld ? 'Hace falta' : 'Al día'}</span></div>
+  <p class="bk-t">Última copia cifrada: ${d.lastBackupAt ? esc(shortDate(d.lastBackupAt, nowIso)) : 'ninguna todavía'}. Se descarga como archivo (guárdalo en iCloud Drive) y solo se abre con tu contraseña.</p>
+  <div class="bk-b"><button class="btn" data-act="bk-open" data-kind="export">Exportar copia</button><button class="btn secondary" data-act="bk-open" data-kind="restore">Restaurar copia</button></div>
 </section>
 ${sec('Actividad')}
 <section class="card stack">
   <div class="card-head"><span class="card-title">Registro de actividad${info('registro', 'Qué es el registro de actividad')}</span><span class="note">${all} ${all === 1 ? 'entrada' : 'entradas'}</span></div>
   <ul class="list">${activity}</ul>
-  <p class="note">*solo se guarda el nombre del archivo y cuántas filas eran nuevas, nunca su contenido</p>
+  ${all > 6 ? `<button class="btn-o block" data-act="log-toggle">${ui.logAll ? 'Ver menos' : `Ver todo (${all})`}</button>` : ''}
+  <p class="note">*de los archivos solo se guarda el nombre, nunca su contenido</p>
 </section>
 <button class="btn secondary" data-action="lock">Bloquear ahora</button>`
   };
@@ -108,7 +111,9 @@ ${sec('Actividad')}
 
 export async function actDatos(name, el, ctx) {
   if (name === 'info') { ctx.ui.datosInfo = el.dataset.key; return true; }
-  if (name === 'close-sheet') { ctx.ui.datosInfo = null; return true; }
+  if (name === 'close-sheet') { ctx.ui.datosInfo = null; ctx.ui.datosSheet = null; ctx.ui.backupMsg = ''; ctx.ui.backupError = ''; return true; }
+  if (name === 'bk-open') { ctx.ui.datosSheet = el.dataset.kind; ctx.ui.backupMsg = ''; ctx.ui.backupError = ''; ctx.ui.backupReady = null; ctx.ui.restoreFile = null; ctx.ui.restoreStep = 0; return true; }
+  if (name === 'log-toggle') { ctx.ui.logAll = !ctx.ui.logAll; return true; }
   if (name === 'm-check') { await ctx.session.toggleMonthly(el.dataset.key); return true; }
   if (name === 'save-ipc') { await ctx.session.setIndependence({ ipc: parseFloat(document.getElementById('ipc').value.replace(',', '.')) }); return true; }
   if (name !== 'save-pf') return false;
