@@ -46,6 +46,8 @@ export function renderMovimientos(ctx) {
   const selGroups = GIDS.filter((g) => st.sel[g]);
   const allOn = selGroups.length === GIDS.length;
   const inSel = (m) => st.sel[groupOf(m, byId, isI)] && (isI || !st.subOff[subOf(m, byId)]);
+  const norm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const q = norm(st.q).trim();
   const refined = !isI && selGroups.some((g) => catalog.some((c) => c.group === g && st.subOff[c.id]));
   const yearMovs = data.movements.filter((m) => valueOf(m) !== 0 && yearOf(m) === per.year && inSel(m));
 
@@ -69,7 +71,7 @@ export function renderMovimientos(ctx) {
     : `${MONTHS_FULL[tm]}${acu ? ' (acumulado)' : ''}: ${isI ? 'ingresos' : 'gasto'} ${eur(sv[tm])} · ${WB} ${bv[tm] > 0 ? eur(bv[tm]) : 'sin definir'}${bv[tm] > 0 ? ' · ' + (isI ? (sv[tm] >= bv[tm] ? 'superado en ' + eur(sv[tm] - bv[tm]) : 'faltan ' + eur(bv[tm] - sv[tm])) : (sv[tm] <= bv[tm] ? 'quedan ' + eur(bv[tm] - sv[tm]) : 'te pasas ' + eur(sv[tm] - bv[tm]))) : ''}`;
 
   // Lista
-  const list = yearMovs.filter((m) => monthOf(m) >= lo && monthOf(m) <= hi).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  const list = yearMovs.filter((m) => monthOf(m) >= lo && monthOf(m) <= hi && (!q || norm(names[m.key] || m.description).includes(q) || norm(m.description).includes(q))).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
   const total = list.reduce((a, m) => a + valueOf(m), 0);
   const grouped = st.grp != null ? st.grp : per.per !== 'm';
   let lastM = -1;
@@ -141,6 +143,7 @@ ${refineBlock}${refinePanel}
   <div class="legend"><span><i style="background:#047857"></i>${isI ? 'Ingresos seleccionados' : 'Gasto seleccionado'}</span><span><i style="background:#a7e3c9"></i>${isI ? 'Objetivo' : 'Presupuesto'} de las categorías elegidas</span></div>
   <div class="tap">${esc(tapText)}</div>
 </section>
+<input class="search" type="search" enterkeyhint="search" data-search placeholder="Buscar por comercio o nombre" value="${esc(st.q || '')}" aria-label="Buscar movimientos">
 <div class="card-head"><span class="note">${list.length} ${list.length === 1 ? 'movimiento' : 'movimientos'} · ${eur(total)}</span><button class="link-btn tog" data-act="toggle-grp" aria-pressed="${grouped}"><span class="switch" style="background:${grouped ? '#047857' : '#b7ddcd'}"><span style="left:${grouped ? '16px' : '2px'}"></span></span>Agrupar por mes</button></div>
 ${st.msg ? `<div class="okbox">${esc(st.msg)}</div>` : ''}
 ${list.length === 0 ? '<div class="card"><p class="note pad-sm">No hay movimientos con estos filtros.</p></div>' : ''}
@@ -153,8 +156,9 @@ export async function actMovimientos(name, el, ctx) {
   const st = movState(ctx);
   const data = ctx.session.data;
   const catalog = expenseCatalog(data.categories);
-  if (!['save-name', 'apply'].includes(name)) st.msg = '';
+  if (!['save-name', 'apply', 'search'].includes(name)) st.msg = '';
   const clear = () => { st.menu = null; st.edit = null; st.pick = null; st.confirm = null; };
+  if (name === 'search') { st.q = el.value.trim(); st.msg = ''; return true; }
   if (['month', 'per', 'year'].includes(name)) { actGastos(name, el, ctx); st.tapM = null; }
   else if (name === 'toggle-sel') { st.sel[el.dataset.id] = !st.sel[el.dataset.id]; st.msg = ''; }
   else if (name === 'toggle-all') { const G = st.type === 'ingreso' ? IGIDS : EGIDS; const on = !G.every((g) => st.sel[g]); G.forEach((g) => { st.sel[g] = on; }); st.subOff = {}; }

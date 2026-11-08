@@ -1,7 +1,7 @@
 /**
  * Reglas de clasificación por palabra clave en la descripción.
  * Las reglas las crea la usuaria (la app las recuerda en los datos cifrados); el código no trae ninguna.
- * @typedef {{pattern:string, categoryId:string}} Rule
+ * @typedef {{pattern:string, categoryId:string, kind?:'gasto'|'ingreso'}} Rule  (sin kind = gasto)
  */
 
 /**
@@ -14,10 +14,14 @@
 export function applyRules(movements, rules) {
   const sorted = [...rules].filter((r) => r.pattern.trim()).sort((a, b) => b.pattern.length - a.pattern.length);
   return movements.map((m) => {
-    if (m.categoryId || (m.kind !== 'gasto' && m.kind !== 'devolucion')) return m;
+    if (m.categoryId) return m;
+    const gasto = m.kind === 'gasto' || m.kind === 'devolucion';
+    const ingreso = m.kind === 'por-revisar' && m.amountCents > 0;
+    if (!gasto && !ingreso) return m;
     const d = m.description.toLowerCase();
-    const hit = sorted.find((r) => d.includes(r.pattern.toLowerCase()));
-    return hit ? { ...m, categoryId: hit.categoryId } : m;
+    const hit = sorted.find((r) => d.includes(r.pattern.toLowerCase()) && ((r.kind || 'gasto') === 'ingreso') === ingreso);
+    if (!hit) return m;
+    return ingreso ? { ...m, kind: 'ingreso', categoryId: hit.categoryId } : { ...m, categoryId: hit.categoryId };
   });
 }
 
@@ -31,7 +35,7 @@ export const needsReview = (m) => m.kind === 'por-revisar' || (m.kind === 'gasto
 
 /**
  * Clasifica un movimiento y todos los que estén pendientes con la misma descripción y la misma fuente.
- * Si es un gasto, la app recuerda la descripción como regla para los próximos extractos.
+ * Si es un gasto o un ingreso, la app recuerda la descripción como regla para los próximos extractos.
  * No modifica `data`: devuelve una copia.
  * @param {import('./store.js').AppData} data
  * @param {string} key clave del movimiento
@@ -50,7 +54,7 @@ export function classifyMovement(data, key, choice) {
   });
   let rules = data.rules;
   const pattern = target.description.trim().toLowerCase();
-  if (choice.kind === 'gasto' && pattern && !rules.some((r) => r.pattern === pattern)) rules = [...rules, { pattern, categoryId: choice.categoryId }];
+  if ((choice.kind === 'gasto' || choice.kind === 'ingreso') && pattern && !rules.some((r) => r.pattern === pattern && (r.kind || 'gasto') === choice.kind)) rules = [...rules, { pattern, categoryId: choice.categoryId, kind: choice.kind }];
   return { data: { ...data, movements, rules }, affected };
 }
 

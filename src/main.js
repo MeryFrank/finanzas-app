@@ -106,6 +106,11 @@ document.addEventListener('input', (ev) => {
 
 document.addEventListener('change', async (ev) => {
   const el = ev.target;
+  if (el.dataset.search !== undefined) {
+    const screen = SCREENS.find((x) => x.id === route().id);
+    try { if (screen.act && await screen.act('search', el, makeCtx())) render(); } catch (e) { ui.backupError = fail(e); render(); }
+    return;
+  }
   if (el.dataset.action === 'import') {
     const files = [...el.files];
     el.value = '';

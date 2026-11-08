@@ -68,7 +68,7 @@ export function renderClasificar(ctx) {
   } else if (st.confirm) {
     const m = byKey.get(st.confirm.key);
     const same = sameCount(data, st.confirm.key) - 1;
-    const text = `Vas a clasificar «${m ? esc(m.description) : ''}» como ${esc(st.confirm.label)}${st.confirm.choice.kind === 'gasto' ? ' (gasto)' : st.confirm.choice.kind === 'ingreso' ? ' (ingreso)' : ''}.${same > 0 ? ` También se clasificarán ${same} movimiento${same === 1 ? '' : 's'} pendiente${same === 1 ? '' : 's'} con la misma descripción.` : ''}${st.confirm.choice.kind === 'gasto' ? ' La app recordará esta descripción para los próximos extractos.' : ''}`;
+    const text = `Vas a clasificar «${m ? esc(m.description) : ''}» como ${esc(st.confirm.label)}${st.confirm.choice.kind === 'gasto' ? ' (gasto)' : st.confirm.choice.kind === 'ingreso' ? ' (ingreso)' : ''}.${same > 0 ? ` También se clasificarán ${same} movimiento${same === 1 ? '' : 's'} pendiente${same === 1 ? '' : 's'} con la misma descripción.` : ''}${st.confirm.choice.kind === 'gasto' || st.confirm.choice.kind === 'ingreso' ? ' La app recordará esta descripción para los próximos extractos.' : ''}`;
     sh = `<div class="sheet-bg"><div class="sheet" role="alertdialog" aria-label="Confirmar cambio"><h2>¿Estás segura?</h2><p class="sheet-text">${text}</p><div class="btn-row"><button class="btn secondary" data-act="close-sheet">Cancelar</button><button class="btn" data-act="apply">Sí, cambiar</button></div></div></div>`;
   }
   return {

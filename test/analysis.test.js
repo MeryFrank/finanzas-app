@@ -81,7 +81,7 @@ test('pendientes: por revisar y gastos sin categoría, el más reciente primero'
   assert.deepEqual(pendingMovements(sample()).map((m) => m.key), ['i', 'f']);
 });
 
-test('clasificar: aplica a los pendientes iguales y aprende la regla (solo gastos)', () => {
+test('clasificar: aplica a los pendientes iguales y aprende la regla (gastos e ingresos; un traspaso no)', () => {
   const d = emptyData();
   d.movements = [
     mv('1', '2026-11-01', -1000, { description: 'Tienda X' }),
@@ -95,7 +95,7 @@ test('clasificar: aplica a los pendientes iguales y aprende la regla (solo gasto
   assert.equal(r.data.movements[1].categoryId, 'regalos');
   assert.equal(r.data.movements[2].categoryId, null);
   assert.equal(d.movements[0].categoryId, null); // no muta
-  assert.deepEqual(r.data.rules, [{ pattern: 'tienda x', categoryId: 'regalos' }]);
+  assert.deepEqual(r.data.rules, [{ pattern: 'tienda x', categoryId: 'regalos', kind: 'gasto' }]);
   const next = applyRules([mv('5', '2026-12-01', -500, { description: 'TIENDA X Sevilla' })], r.data.rules);
   assert.equal(next[0].categoryId, 'regalos');
   const t = classifyMovement(d, '4', { kind: 'traspaso' });
@@ -114,4 +114,14 @@ test('ingresos del periodo por grupo y objetivo opcional', async () => {
   assert.equal(m.budgetTotal, 200000); assert.equal(m.prevTotal, 230000);
   const t = incomeSummary(d, { year: 2026, month: 9, per: '3m' });
   assert.equal(t.total, 464500); assert.equal(t.budgetTotal, 600000);
+});
+
+test('las reglas de ingreso se aprenden y se aplican a ingresos nuevos, sin tocar gastos', () => {
+  const mv = (key, cents, kind, description) => ({ key, date: '2026-10-01', amountCents: cents, kind, categoryId: null, description, source: 'revolut-account' });
+  const d0 = { ...emptyData(), movements: [mv('a', 230000, 'por-revisar', 'Empresa Ficticia SL')] };
+  const r = classifyMovement(d0, 'a', { kind: 'ingreso', categoryId: 'nomina' });
+  assert.deepEqual(r.data.rules, [{ pattern: 'empresa ficticia sl', categoryId: 'nomina', kind: 'ingreso' }]);
+  const next = applyRules([mv('b', 230000, 'por-revisar', 'EMPRESA FICTICIA SL ref 22'), mv('c', -500, 'gasto', 'Empresa Ficticia SL café')], r.data.rules);
+  assert.equal(next[0].kind, 'ingreso'); assert.equal(next[0].categoryId, 'nomina');
+  assert.equal(next[1].categoryId, null); // un gasto no usa reglas de ingreso
 });
