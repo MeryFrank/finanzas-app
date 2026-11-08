@@ -1,5 +1,11 @@
 # finanzas-app
 
-Aplicación web personal (PWA) para controlar ingresos, gastos, ahorro e inversión. Los datos se guardan cifrados solo en el dispositivo; este repositorio no contiene ningún dato personal ni financiero.
+App personal de finanzas (PWA, datos locales cifrados, primero para iPhone).
 
-Estado: en construcción.
+**Estado:** en construcción. Esqueleto de la app con las 7 pestañas; siguiente: lectores de CSV.
+
+Este repositorio no contiene datos personales ni financieros: solo código. Las reglas están en `CLAUDE.md`.
+
+## Desarrollo
+- Probar en local: `python3 -m http.server` y abrir `http://localhost:8000`.
+- Pruebas: `npm test`.
