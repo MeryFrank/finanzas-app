@@ -1,12 +1,14 @@
 import { parseCsv } from './parse.js';
 import { detectFormat } from './detect.js';
 import { parseRevolutCard, parseRevolutAccount } from './revolut.js';
+import { parseRevolutFund } from './revolutFund.js';
 import { parseDegiroPortfolio, parseDegiroTransactions, parseDegiroStatement } from './degiro.js';
 
 const PARSERS = { 'revolut-card': parseRevolutCard, 'revolut-account': parseRevolutAccount };
 
-/** DEGIRO no produce movimientos de caja: posiciones, compras o rendimiento de la inversión. */
+/** Estos formatos no producen movimientos de caja: posiciones, compras o rendimiento de la inversión. */
 const DEGIRO = {
+  'revolut-fund': (rows) => parseRevolutFund(rows),
   'degiro-portfolio': parseDegiroPortfolio,
   'degiro-transactions': parseDegiroTransactions,
   'degiro-statement': parseDegiroStatement
@@ -15,7 +17,7 @@ const DEGIRO = {
 /**
  * Lee un CSV, detecta el formato por la cabecera y devuelve los movimientos.
  * @param {string} text contenido del archivo
- * @returns {{ok:true, format:{id:string,label:string}, movements?:import('../model.js').Movement[], positions?:import('./degiro.js').Position[], cashCents?:number|null, trades?:import('./degiro.js').Trade[], events?:import('./degiro.js').InvestmentEvent[], skipped:Object} | {ok:false, error:string}}
+ * @returns {{ok:true, format:{id:string,label:string}, movements?:import('../model.js').Movement[], positions?:import('./degiro.js').Position[], cashCents?:number|null, trades?:import('./degiro.js').Trade[], events?:(import('./degiro.js').InvestmentEvent|import('./revolutFund.js').FundEvent)[], skipped:Object} | {ok:false, error:string}}
  */
 export function importCsv(text) {
   const rows = parseCsv(text);

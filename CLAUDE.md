@@ -29,6 +29,12 @@ PWA personal de finanzas, pensada primero para iPhone. Los datos viven cifrados 
 Modelo aprobado: se guarda la subcategoría detallada (32 de gasto, 5 de ingreso); los anillos muestran el grupo (8 de gasto, los del Excel: Vivienda, Alimentación, Transporte, Ocio y deporte, Compras personales, Suscripciones, Finanzas, Otros).
 Además cada subcategoría de gasto tiene un **tipo** aparte: Fijo, Variable necesario o Discrecional. El tipo solo se edita en Datos > Categorías (no en Gastos ni en Ingresos); ahí también se crean categorías nuevas. Los cambios de tipo y las categorías nuevas se guardan en los datos cifrados, no en el código.
 
+## Cosas a tener en cuenta al modificar el código
+- **Ventas en DEGIRO:** por ahora no habrá ventas. El lector asume que una venta trae la cantidad negativa, pero no está comprobado con un extracto real. Si algún día hay ventas, verificarlo (y cómo afectan al coste medio) antes de fiarse.
+- **Fondo monetario de Revolut:** el saldo es el capital en participaciones (compras − ventas); el rendimiento pagado menos la comisión es rendimiento de la inversión. Reinvertir o retirar rendimiento es mover dinero, no rendimiento nuevo.
+- **Dividendos en dólares (DEGIRO):** se pasan a euros con el tipo de cambio de las filas de cambio de divisa del mismo día o de los 3 siguientes; si no hay, el importe en euros queda sin calcular.
+- **Formatos sin muestra:** Revolut cuenta con la app en inglés y MyInvestor. Al añadirlos, detectar por cabecera y escribir pruebas con datos inventados.
+
 ## Estilo
 - Textos de la app en español. Las frases empiezan con mayúscula; las explicaciones empiezan con "*" y en minúscula. No usar "Datos de ejemplo".
 - Barra inferior fija con 7 pestañas, elevada para la barra del iPhone. Campos editables a 16 px o más.

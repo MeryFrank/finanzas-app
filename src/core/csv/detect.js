@@ -15,6 +15,12 @@ const FORMATS = [
     forbidden: []
   },
   {
+    id: 'revolut-fund',
+    label: 'Revolut - Fondo monetario',
+    required: ['date', 'description', 'value, eur', 'price per share', 'quantity of shares'],
+    forbidden: []
+  },
+  {
     id: 'degiro-portfolio',
     label: 'DEGIRO - Cartera de inversión (posiciones)',
     required: ['product', 'symbol/isin', 'amount', 'closing', 'local value', 'value in eur'],

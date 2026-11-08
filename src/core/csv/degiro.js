@@ -73,7 +73,7 @@ export function parseDegiroPortfolio(rows) {
 
 /**
  * DEGIRO - Transactions. Las columnas sin nombre son la divisa que sigue a Price y a Local value.
- * Compra = cantidad positiva y total negativo. La venta se asume con cantidad negativa (por confirmar con una venta real).
+ * Compra = cantidad positiva y total negativo. La venta se asume con cantidad negativa (sin comprobar: por ahora no habrá ventas).
  * @param {string[][]} rows
  * @returns {{trades: Trade[], skipped: {invalid:number}}}
  */

@@ -28,3 +28,17 @@ export const STATEMENT_CSV = [
   '04-10-2026,12:00,04-10-2026,,,Transfer to your Cash Account at flatexDEGIRO Bank SE: 50 EUR,,,,EUR,12.26,',
   '03-10-2026,12:00,03-10-2026,,,flatex Deposit,,EUR,300.00,EUR,300.00,'
 ].join('\n');
+
+// Fondo monetario (inventado): meses abreviados en español, importes con coma entre comillas, precio con punto.
+export const FUND_CSV = [
+  'Date,Description,"Value, EUR",Price per share,Quantity of shares',
+  '"27 sept 2026, 2:25:35",Return PAID EUR Class R IE000AAAA0000,"0,0452",,',
+  '"27 sept 2026, 2:25:35",Service Fee Charged EUR Class IE000AAAA0000,"-0,0123",,',
+  '"26 sept 2026, 12:00:00",Return Reinvested Class R EUR IE000AAAA0000,"-0,5000",,',
+  '"26 sept 2026, 11:59:00",BUY EUR Class R IE000AAAA0000,"0,50",1.00,"0,50"',
+  '"10 oct 2026, 9:05:01",SELL EUR Class R IE000AAAA0000,"-20,00",1.00,"20"',
+  '"05 oct 2026, 9:05:01",Return WITHDRAWN EUR Class R IE000AAAA0000,"-0,10",,',
+  '"01 oct 2026, 8:00:00",BUY EUR Class R IE000AAAA0000,"100,00",1.00,"100"',
+  '"02 ene 2026, 8:00:00",Return PAID EUR Class R IE000AAAA0000,"0,2000",,',
+  '"02 ene 2026, 8:00:00",Return PAID EUR Class R IE000AAAA0000,"0,2000",,'
+].join('\n');
