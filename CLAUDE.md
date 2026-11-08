@@ -15,12 +15,13 @@ PWA personal de finanzas, pensada primero para iPhone. Los datos viven cifrados 
 - JavaScript con módulos ES y JSDoc para los tipos, sin paso de compilación: GitHub Pages sirve los archivos tal cual.
 - Pruebas con el ejecutor integrado de Node: `npm test` (`node --test`).
 - Lógica pura en `src/core/` (sin DOM), pantallas en `src/screens/`, estilos en `src/styles.css`.
-- Cifrado previsto: Web Crypto, AES-256-GCM con clave derivada de la contraseña (PBKDF2 o Argon2) y sal distinta por archivo. La copia de seguridad es un archivo cifrado exportable y restaurable.
+- Cifrado previsto: Web Crypto, AES-256-GCM con clave derivada de la contraseña (PBKDF2 o Argon2) y sal distinta por archivo. La copia de seguridad es un archivo cifrado exportable y restaurable (`src/core/backup.js`, extensión `.finanzas`). Implementado en `src/core/crypto.js`: PBKDF2-SHA-256 con 600.000 iteraciones, sal nueva por archivo, IV nuevo en cada guardado y cabecera autenticada. La clave solo vive en memoria mientras la app está desbloqueada; la pantalla de bloqueo y el bloqueo automático por inactividad van en la capa de pantallas.
 
 ## Importación de CSV
 - Detectar el formato **por la cabecera**, nunca por el nombre del archivo (el idioma de la app cambia cabeceras y tipos).
 - Normalizar fecha, decimal (punto o coma) y signo; convertir cada fila al movimiento común.
-- Evitar duplicados al reimportar periodos solapados (clave por plataforma).
+- Evitar duplicados al reimportar periodos solapados (clave por plataforma). Se puede subir cualquier CSV varias veces: entra solo lo nuevo; la foto de posiciones de DEGIRO se sustituye por la más reciente.
+- Cada pantalla muestra en pequeño, bajo el título, "*actualizado el ... · último dato ...", calculado con `freshness()` de `src/core/store.js`; en amarillo si alguna fuente lleva más de 30 días. Datos muestra el detalle por archivo.
 - Lo no reconocido va a "sin clasificar"; las reglas que aprenda la app se guardan en los datos cifrados, no en el código.
 - Dividendos, intereses y comisiones de inversión son **rendimiento de la inversión**, no ingresos ni gastos del día a día.
 - Los traspasos internos (pago de la tarjeta, paso al fondo monetario) no son gasto ni ingreso.
