@@ -17,6 +17,7 @@ export function renderDatos(ctx) {
   }).join('');
   const activity = d.activity.slice(0, 8).map((a) => `<li><span>${esc(a.file)}</span><span class="note">${a.newRows} nuevos · ${esc(shortDate(a.at, nowIso))}</span></li>`).join('') || '<li><span class="note">Todavía no has importado nada</span></li>';
   return `
+<a class="card link-card" href="#/datos/categorias"><span><strong>Categorías</strong><span class="note">*grupos, subcategorías y tipo de gasto</span></span><span aria-hidden="true">›</span></a>
 <section class="card stack">
   <h2>Importar CSV</h2>
   <p class="note">*elige uno o varios archivos exportados desde la app de cada plataforma; se reconocen solos y solo entra lo nuevo</p>

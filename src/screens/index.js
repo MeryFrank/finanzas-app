@@ -3,6 +3,7 @@ import { renderDatos } from './datos.js';
 import { renderGastos, actGastos } from './gastos.js';
 import { renderClasificar, actClasificar } from './clasificar.js';
 import { renderPresupuesto, actPresupuesto } from './presupuesto.js';
+import { renderCategorias, actCategorias } from './categorias.js';
 import { renderMovimientos, actMovimientos } from './movimientos.js';
 const pending = (text) => `<div class="card"><p>Pantalla en construcción.</p><p class="note">*${text}</p></div>`;
 
@@ -17,5 +18,6 @@ export const SCREENS = [
   { id: 'ahorro', label: 'Ahorro', title: 'Ahorro', icon: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8"/><path d="M9.5 10.5h4a1.5 1.5 0 010 3h-3"/>', render: () => pending('saldo de la cuenta remunerada y cuadre de cuentas') },
   { id: 'cartera', label: 'Cartera', title: 'Cartera', icon: '<path d="M12 3v9h9"/><circle cx="12" cy="12" r="9"/>', render: () => pending('posiciones, rentabilidad y peso frente al objetivo') },
   { id: 'meta', label: 'Meta', title: 'Independencia', icon: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>', render: () => pending('fecha de independencia, escenarios Real y Prueba') },
-  { id: 'datos', label: 'Datos', title: 'Datos', icon: '<path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>', render: (ctx) => (ctx ? renderDatos(ctx) : pending('importar CSV, copia de seguridad y ajustes')) }
+  { id: 'datos', label: 'Datos', title: 'Datos', icon: '<path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>', render: (ctx) => (ctx ? (ctx.route.sub === 'categorias' ? renderCategorias(ctx) : renderDatos(ctx)) : pending('importar CSV, copia de seguridad y ajustes')),
+  act: (name, el, ctx) => (ctx.route.sub === 'categorias' ? actCategorias(name, el, ctx) : false) }
 ];

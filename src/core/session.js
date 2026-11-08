@@ -5,6 +5,7 @@ import { emptyData, validateData, ingest, LOCK_OPTIONS, DEFAULT_LOCK_MINUTES } f
 import { importCsv } from './csv/import.js';
 import { SOURCES } from './store.js';
 import { applyRules, classifyMovement, reclassifyMovement, renameMovement } from './classify.js';
+import { setTipo, addCategory, deleteCategory } from './catedit.js';
 import { exportBackup, restoreBackup, backupFileName } from './backup.js';
 
 export const IDLE_MS = DEFAULT_LOCK_MINUTES * 60 * 1000; // por defecto se bloquea a los 5 minutos sin tocar la app o en segundo plano; se puede cambiar en Datos
@@ -132,6 +133,12 @@ export class Session {
     this.data = renameMovement(this.data, key, name);
     await this.save();
   }
+
+  async setTipo(id, tipo) { this.touch(); this.data = setTipo(this.data, id, tipo); await this.save(); }
+
+  async addCategory(c) { this.touch(); const r = addCategory(this.data, c); this.data = r.data; await this.save(); return r.id; }
+
+  async deleteCategory(id) { this.touch(); const r = deleteCategory(this.data, id); this.data = r.data; await this.save(); return r.moved; }
 
   /** @param {Record<string,number>} budget euros al mes por grupo */
   async setBudget(budget) {
