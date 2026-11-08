@@ -7,6 +7,7 @@ import { renderCategorias, actCategorias } from './categorias.js';
 import { renderImportados, actImportados } from './importados.js';
 import { renderCartera, renderPosiciones, renderPosicion, actCartera, actPosicion } from './cartera.js';
 import { renderPrecios } from './precios.js';
+import { renderResumen, actResumen } from './resumen.js';
 import { renderMeta, actMeta } from './meta.js';
 import { renderAhorro, actAhorro } from './ahorro.js';
 import { renderIngresos, actIngresos } from './ingresos.js';
@@ -15,7 +16,7 @@ import { renderMovimientos, actMovimientos } from './movimientos.js';
 const pending = (text) => `<div class="card"><p>Pantalla en construcción.</p><p class="note">*${text}</p></div>`;
 
 export const SCREENS = [
-  { id: 'resumen', label: 'Resumen', title: 'Resumen', icon: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>', render: () => pending('patrimonio, ingresos, gasto, ahorrado e invertido del mes') },
+  { id: 'resumen', label: 'Resumen', title: 'Resumen', icon: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>', render: (ctx) => (ctx ? renderResumen(ctx) : pending('patrimonio, ingresos, gasto, ahorrado e invertido del mes')), act: actResumen },
   { id: 'ingresos', label: 'Ingresos', title: 'Ingresos', icon: '<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>', render: (ctx) => {
     if (!ctx) return pending('nómina y reembolsos por categoría');
     return { objetivo: renderObjetivo, movimientos: renderMovimientos }[ctx.route.sub]?.(ctx) || renderIngresos(ctx);

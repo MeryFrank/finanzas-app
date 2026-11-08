@@ -251,3 +251,10 @@ input[type=range] { width: 100%; min-height: 44px; accent-color: #047857; }
 .draft { pointer-events: auto; background: #fdf1cf; border: 1px solid #ebb53a; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; color: #5c4308; font-size: 13px; line-height: 1.45; box-shadow: 0 4px 16px rgba(2,44,34,0.2); }
 .draft-b { display: flex; gap: 8px; } .draft-b .btn { flex: 1; }
 button.link-card { text-align: left; width: 100%; font: inherit; cursor: pointer; }
+
+/* ---- Resumen ---- */
+.rel { position: relative; }
+.rel > .info-btn { position: absolute; top: 0; right: 0; }
+.rel > .kcard { height: 100%; box-sizing: border-box; }
+.card-head .info-btn { position: static; }
+.banner.warnb { background: #fdeceA; border-color: #d03e27; color: #7a2315; }
