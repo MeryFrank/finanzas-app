@@ -1,8 +1,8 @@
 // Caché mínima para que la app abra sin conexión. Subir VERSION al cambiar archivos.
-const VERSION = 'v6';
+const VERSION = 'v7';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'src/styles.css', 'src/main.js', 'src/router.js', 'src/storage.js',
-  'src/screens/index.js', 'src/screens/html.js', 'src/screens/lock.js', 'src/screens/datos.js', 'src/screens/ui.js', 'src/screens/gastos.js', 'src/screens/clasificar.js', 'src/screens/presupuesto.js', 'src/screens/movimientos.js', 'src/screens/categorias.js',
+  'src/screens/index.js', 'src/screens/html.js', 'src/screens/lock.js', 'src/screens/datos.js', 'src/screens/ui.js', 'src/screens/gastos.js', 'src/screens/clasificar.js', 'src/screens/presupuesto.js', 'src/screens/movimientos.js', 'src/screens/categorias.js', 'src/screens/ingresos.js', 'src/screens/objetivo.js',
   'src/core/analysis.js', 'src/core/backup.js', 'src/core/catedit.js', 'src/core/categories.js', 'src/core/classify.js', 'src/core/crypto.js', 'src/core/format.js',
   'src/core/model.js', 'src/core/money.js', 'src/core/session.js', 'src/core/store.js',
   'src/core/csv/degiro.js', 'src/core/csv/detect.js', 'src/core/csv/import.js', 'src/core/csv/parse.js', 'src/core/csv/revolut.js', 'src/core/csv/revolutFund.js'

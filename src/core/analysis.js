@@ -1,6 +1,6 @@
 // Cálculos de Gastos: agrupa los movimientos por periodo, grupo, subcategoría y tipo, y los compara con el presupuesto.
 // Lógica pura, sin DOM. Importes en céntimos.
-import { EXPENSE_GROUPS, expenseCatalog } from './categories.js';
+import { EXPENSE_GROUPS, INCOME_GROUPS, INCOME_CATEGORIES, expenseCatalog } from './categories.js';
 import { needsReview } from './classify.js';
 
 /** Color y emoji de cada grupo de gasto (igual que la maqueta). */
@@ -74,3 +74,35 @@ export function expenseSummary(data, sel) {
 
 /** Movimientos pendientes de clasificar, del más reciente al más antiguo. */
 export const pendingMovements = (data) => data.movements.filter(needsReview).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+
+/** Color y emoji de cada grupo de ingreso (igual que la maqueta). */
+export const INCOME_STYLE = { nomina: { color: '#2e8a47', emoji: '💼' }, reembolsos: { color: '#0ea5e9', emoji: '↩️' } };
+
+/** Ingreso que aporta un movimiento (solo los clasificados como ingreso). */
+export const incomeOf = (m) => (m.kind === 'ingreso' ? m.amountCents : 0);
+
+/** Grupo de ingreso de un movimiento; si la categoría no se reconoce cuenta como reembolsos. */
+export const incomeGroupOf = (m) => { const c = INCOME_CATEGORIES.find((x) => x.id === m.categoryId); return c ? c.group : 'reembolsos'; };
+
+/**
+ * Ingresos del periodo por grupo, frente al objetivo opcional.
+ * @param {import('./store.js').AppData} data
+ * @param {{year:number, month:number, per:'m'|'3m'|'ytd'}} sel
+ */
+export function incomeSummary(data, sel) {
+  const [lo, hi] = periodRange(sel.month, sel.per);
+  const nMonths = hi - lo + 1;
+  const target = data.incomeTarget || {};
+  const sums = {};
+  for (const m of data.movements) {
+    const v = incomeOf(m);
+    if (!v || yearOf(m) !== sel.year || monthOf(m) < lo || monthOf(m) > hi) continue;
+    const g = incomeGroupOf(m);
+    sums[g] = (sums[g] || 0) + v;
+  }
+  const groups = Object.keys(INCOME_GROUPS).map((id) => ({ id, name: INCOME_GROUPS[id], ...INCOME_STYLE[id], spent: Math.max(0, sums[id] || 0), budget: Math.round((target[id] || 0) * 100) * nMonths }));
+  const total = groups.reduce((a, g) => a + g.spent, 0);
+  const budgetTotal = groups.reduce((a, g) => a + g.budget, 0);
+  const prevTotal = sel.per === 'm' && sel.month > 0 ? incomeSummary(data, { ...sel, month: sel.month - 1 }).total : null;
+  return { groups, total, budgetTotal, prevTotal, nMonths };
+}

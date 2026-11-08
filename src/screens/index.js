@@ -4,12 +4,18 @@ import { renderGastos, actGastos } from './gastos.js';
 import { renderClasificar, actClasificar } from './clasificar.js';
 import { renderPresupuesto, actPresupuesto } from './presupuesto.js';
 import { renderCategorias, actCategorias } from './categorias.js';
+import { renderIngresos, actIngresos } from './ingresos.js';
+import { renderObjetivo, actObjetivo } from './objetivo.js';
 import { renderMovimientos, actMovimientos } from './movimientos.js';
 const pending = (text) => `<div class="card"><p>Pantalla en construcción.</p><p class="note">*${text}</p></div>`;
 
 export const SCREENS = [
   { id: 'resumen', label: 'Resumen', title: 'Resumen', icon: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>', render: () => pending('patrimonio, ingresos, gasto, ahorrado e invertido del mes') },
-  { id: 'ingresos', label: 'Ingresos', title: 'Ingresos', icon: '<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>', render: () => pending('nómina y reembolsos por categoría') },
+  { id: 'ingresos', label: 'Ingresos', title: 'Ingresos', icon: '<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>', render: (ctx) => {
+    if (!ctx) return pending('nómina y reembolsos por categoría');
+    return { objetivo: renderObjetivo, movimientos: renderMovimientos }[ctx.route.sub]?.(ctx) || renderIngresos(ctx);
+  },
+  act: (name, el, ctx) => ({ objetivo: actObjetivo, movimientos: actMovimientos }[ctx.route.sub] || actIngresos)(name, el, ctx) },
   { id: 'gastos', label: 'Gastos', title: 'Gastos', icon: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/>', render: (ctx) => {
     if (!ctx) return pending('anillos por categoría frente al presupuesto');
     return { clasificar: renderClasificar, presupuesto: renderPresupuesto, movimientos: renderMovimientos }[ctx.route.sub]?.(ctx) || renderGastos(ctx);

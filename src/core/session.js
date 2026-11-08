@@ -140,6 +140,13 @@ export class Session {
 
   async deleteCategory(id) { this.touch(); const r = deleteCategory(this.data, id); this.data = r.data; await this.save(); return r.moved; }
 
+  /** @param {Record<string,number>} target euros al mes por grupo de ingreso */
+  async setIncomeTarget(target) {
+    this.touch();
+    this.data = { ...this.data, incomeTarget: { ...target }, incomeTargetSavedAt: this.now() };
+    await this.save();
+  }
+
   /** @param {Record<string,number>} budget euros al mes por grupo */
   async setBudget(budget) {
     this.touch();

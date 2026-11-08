@@ -22,7 +22,7 @@ export function renderPresupuesto(ctx) {
   const st = ctx.ui.presupuesto || (ctx.ui.presupuesto = { info: false, saved: false });
   const total = Object.keys(EXPENSE_GROUPS).reduce((a, g) => a + (data.budget[g] || 0), 0);
   const review = nextReview(data.budgetSavedAt);
-  const rows = Object.entries(EXPENSE_GROUPS).map(([gid, name]) => `<label class="bud-row"><span class="grp-name"><span class="dot" style="background:${GROUP_STYLE[gid].color}"></span>${esc(name)}</span><span class="bud-in"><input type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" name="b-${gid}" value="${data.budget[gid] || 0}" aria-label="Presupuesto mensual de ${esc(name)}">€</span></label>`).join('');
+  const rows = Object.entries(EXPENSE_GROUPS).map(([gid, name]) => `<label class="bud-row"><span class="grp-name"><span class="dot" style="background:${GROUP_STYLE[gid].color}"></span>${esc(name)}</span><span class="bud-in"><input type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" name="b-${gid}" data-amount value="${data.budget[gid] || 0}" aria-label="Presupuesto mensual de ${esc(name)}">€</span></label>`).join('');
   return {
     back: { href: '#/gastos', label: 'Gastos' },
     title: 'Presupuesto mensual',

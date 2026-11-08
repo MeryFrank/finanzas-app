@@ -9,7 +9,7 @@ export const GASTOS_INFO = {
   tipos: { t: 'Tipos de gasto', what: 'Cada categoría tiene un tipo. Fijo: se repite cada mes y es difícil de recortar (alquiler, suscripciones, cuota del gimnasio). Variable necesario: lo necesitas pero cambia según el uso (supermercado, transporte público, farmacia). Discrecional: podrías prescindir de ello (restaurantes, ocio, viajes, compras no esenciales).', how: 'Se suma el gasto del periodo de las categorías de cada tipo. Los gastos de categorías sin tipo definido aparecen aparte. El tipo se cambia en Datos > Categorías.' }
 };
 
-const RADII = [100, 89, 78, 67, 56, 45, 34, 23];
+export const RADII = [100, 89, 78, 67, 56, 45, 34, 23];
 
 /** Estado de la pantalla (año, mes, periodo, grupo abierto); empieza en el último mes con datos. */
 export function gastosState(ctx) {

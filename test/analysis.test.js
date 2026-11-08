@@ -103,3 +103,15 @@ test('clasificar: aplica a los pendientes iguales y aprende la regla (solo gasto
   assert.equal(t.data.rules.length, 0); // un traspaso no crea regla
   assert.throws(() => classifyMovement(d, 'nope', { kind: 'traspaso' }));
 });
+
+test('ingresos del periodo por grupo y objetivo opcional', async () => {
+  const { incomeSummary } = await import('../src/core/analysis.js');
+  const { emptyData } = await import('../src/core/store.js');
+  const mv = (key, date, cents, kind, categoryId) => ({ key, date, amountCents: cents, kind, categoryId, description: 'x', source: 'revolut-account' });
+  const d = { ...emptyData(), movements: [mv('1', '2026-10-01', 230000, 'ingreso', 'nomina'), mv('2', '2026-10-05', 4500, 'ingreso', 'otros-ingresos'), mv('3', '2026-09-01', 230000, 'ingreso', 'nomina'), mv('4', '2026-10-06', -1000, 'gasto', 'luz'), mv('5', '2026-10-07', 5000, 'traspaso', null)], incomeTarget: { nomina: 2000 } };
+  const m = incomeSummary(d, { year: 2026, month: 9, per: 'm' });
+  assert.equal(m.total, 234500); assert.equal(m.groups[0].spent, 230000); assert.equal(m.groups[1].spent, 4500);
+  assert.equal(m.budgetTotal, 200000); assert.equal(m.prevTotal, 230000);
+  const t = incomeSummary(d, { year: 2026, month: 9, per: '3m' });
+  assert.equal(t.total, 464500); assert.equal(t.budgetTotal, 600000);
+});

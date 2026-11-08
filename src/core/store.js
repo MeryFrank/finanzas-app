@@ -41,6 +41,8 @@ export const SCREEN_SOURCES = {
  * @property {{tipos:Record<string,string>, newCats:any[]}} categories ajustes de categorías
  * @property {Record<string,{lastImportAt:string,lastDataDate:string|null}>} imports
  * @property {Record<string,number>} budget presupuesto mensual por grupo de gasto, en euros (id del grupo -> euros)
+ * @property {Record<string,number>} incomeTarget objetivo mensual de ingresos por grupo (nomina, reembolsos), en euros; opcional
+ * @property {string|null} incomeTargetSavedAt
  * @property {Record<string,string>} names nombres que ha puesto la usuaria a movimientos (clave del movimiento -> nombre)
  * @property {string|null} budgetSavedAt cuándo se guardó el presupuesto (para la revisión cada 6 meses)
  * @property {{lockMinutes:number}} settings bloqueo automático: minutos sin usar la app (también en segundo plano)
@@ -61,6 +63,8 @@ export const emptyData = () => ({
   budget: {},
   budgetSavedAt: null,
   names: {},
+  incomeTarget: {},
+  incomeTargetSavedAt: null,
   settings: { lockMinutes: DEFAULT_LOCK_MINUTES },
   activity: []
 });
@@ -73,6 +77,8 @@ export function validateData(d) {
   if (!ok) throw new Error('Los datos de la copia no tienen el formato esperado');
   if (!d.budget || typeof d.budget !== 'object') d.budget = {};
   if (d.budgetSavedAt === undefined) d.budgetSavedAt = null;
+  if (!d.incomeTarget || typeof d.incomeTarget !== 'object') d.incomeTarget = {};
+  if (d.incomeTargetSavedAt === undefined) d.incomeTargetSavedAt = null;
   if (!d.names || typeof d.names !== 'object') d.names = {};
   if (!d.settings || !LOCK_OPTIONS.includes(d.settings.lockMinutes)) d.settings = { lockMinutes: DEFAULT_LOCK_MINUTES }; // datos guardados antes de existir los ajustes
   return d;

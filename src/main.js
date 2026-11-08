@@ -8,7 +8,7 @@ import { freshnessText } from './core/format.js';
 import { parseBudget } from './screens/presupuesto.js';
 import { eur } from './screens/ui.js';
 import { esc } from './screens/html.js';
-import { EXPENSE_GROUPS } from './core/categories.js';
+import { EXPENSE_GROUPS, INCOME_GROUPS } from './core/categories.js';
 
 const ids = SCREENS.map((s) => s.id);
 const $ = (id) => document.getElementById(id);
@@ -66,7 +66,12 @@ document.addEventListener('submit', async (ev) => {
   try {
     if (form.dataset.form === 'setup') { await session.create(v.password, v.confirm); ui.lockError = ''; }
     else if (form.dataset.form === 'unlock') { await session.unlock(v.password); ui.lockError = ''; }
-    else if (form.dataset.form === 'budget') {
+    else if (form.dataset.form === 'target') {
+      const target = {};
+      Object.keys(INCOME_GROUPS).forEach((g) => { target[g] = parseBudget(v['t-' + g]); });
+      await session.setIncomeTarget(target);
+      ui.objetivo = { ...(ui.objetivo || {}), saved: true };
+    } else if (form.dataset.form === 'budget') {
       const budget = {};
       Object.keys(EXPENSE_GROUPS).forEach((g) => { budget[g] = parseBudget(v['b-' + g]); });
       await session.setBudget(budget);
@@ -90,11 +95,12 @@ document.addEventListener('submit', async (ev) => {
 
 // El total del presupuesto se actualiza al escribir, sin volver a pintar la pantalla (así no se pierde el foco).
 document.addEventListener('input', (ev) => {
-  const form = ev.target.closest('form[data-form=budget]');
+  const form = ev.target.closest('form[data-form=budget], form[data-form=target]');
   if (!form) return;
-  if (ui.presupuesto) ui.presupuesto.saved = false;
-  const total = [...form.querySelectorAll('input[name^="b-"]')].reduce((a, i) => a + parseBudget(i.value), 0);
-  const t = $('budget-total'); if (t) t.textContent = eur(total * 100);
+  const st = form.dataset.form === 'budget' ? ui.presupuesto : ui.objetivo;
+  if (st) st.saved = false;
+  const total = [...form.querySelectorAll('input[data-amount]')].reduce((a, i) => a + parseBudget(i.value), 0);
+  const t = $('budget-total'); if (t) t.textContent = total === 0 && form.dataset.form === 'target' ? 'Sin objetivo' : eur(total * 100);
   const m = form.querySelector('.okmsg'); if (m) m.textContent = '';
 });
 
