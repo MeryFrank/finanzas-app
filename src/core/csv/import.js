@@ -1,19 +1,28 @@
 import { parseCsv } from './parse.js';
 import { detectFormat } from './detect.js';
 import { parseRevolutCard, parseRevolutAccount } from './revolut.js';
+import { parseDegiroPortfolio, parseDegiroTransactions, parseDegiroStatement } from './degiro.js';
 
 const PARSERS = { 'revolut-card': parseRevolutCard, 'revolut-account': parseRevolutAccount };
+
+/** DEGIRO no produce movimientos de caja: posiciones, compras o rendimiento de la inversión. */
+const DEGIRO = {
+  'degiro-portfolio': parseDegiroPortfolio,
+  'degiro-transactions': parseDegiroTransactions,
+  'degiro-statement': parseDegiroStatement
+};
 
 /**
  * Lee un CSV, detecta el formato por la cabecera y devuelve los movimientos.
  * @param {string} text contenido del archivo
- * @returns {{ok:true, format:{id:string,label:string}, movements:import('../model.js').Movement[], skipped:{pending:number,invalid:number}} | {ok:false, error:string}}
+ * @returns {{ok:true, format:{id:string,label:string}, movements?:import('../model.js').Movement[], positions?:import('./degiro.js').Position[], cashCents?:number|null, trades?:import('./degiro.js').Trade[], events?:import('./degiro.js').InvestmentEvent[], skipped:Object} | {ok:false, error:string}}
  */
 export function importCsv(text) {
   const rows = parseCsv(text);
   if (rows.length === 0) return { ok: false, error: 'El archivo está vacío.' };
   const format = detectFormat(rows[0]);
   if (!format) return { ok: false, error: 'No reconozco este formato de CSV.' };
+  if (format.id in DEGIRO) return { ok: true, format, ...DEGIRO[format.id](rows) };
   const { movements, skipped } = PARSERS[format.id](rows);
   return { ok: true, format, movements, skipped };
 }

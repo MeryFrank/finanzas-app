@@ -13,6 +13,24 @@ const FORMATS = [
     label: 'Revolut - Cuenta bancaria',
     required: ['tipo', 'producto', 'fecha de inicio', 'descripcion', 'importe', 'comision', 'divisa', 'state', 'saldo'],
     forbidden: []
+  },
+  {
+    id: 'degiro-portfolio',
+    label: 'DEGIRO - Cartera de inversión (posiciones)',
+    required: ['product', 'symbol/isin', 'amount', 'closing', 'local value', 'value in eur'],
+    forbidden: []
+  },
+  {
+    id: 'degiro-transactions',
+    label: 'DEGIRO - Cartera de inversión (compras)',
+    required: ['date', 'time', 'product', 'isin', 'quantity', 'price', 'total eur', 'order id'],
+    forbidden: []
+  },
+  {
+    id: 'degiro-statement',
+    label: 'DEGIRO - Cartera de inversión (estado de cuenta)',
+    required: ['date', 'time', 'value date', 'product', 'isin', 'description', 'change', 'balance'],
+    forbidden: []
   }
 ];
 
