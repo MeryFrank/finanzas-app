@@ -26,7 +26,8 @@ PWA personal de finanzas, pensada primero para iPhone. Los datos viven cifrados 
 - Los traspasos internos (pago de la tarjeta, paso al fondo monetario) no son gasto ni ingreso.
 
 ## Categorías
-Se guarda la categoría detallada (32 de gasto, 5 de ingreso) y los anillos muestran el grupo (8 de gasto: Supermercado, Restaurantes y bares, Transporte, Suscripciones, Deporte, Ocio, Hogar, Otros).
+Modelo aprobado: se guarda la subcategoría detallada (32 de gasto, 5 de ingreso); los anillos muestran el grupo (8 de gasto, los del Excel: Vivienda, Alimentación, Transporte, Ocio y deporte, Compras personales, Suscripciones, Finanzas, Otros).
+Además cada subcategoría de gasto tiene un **tipo** aparte: Fijo, Variable necesario o Discrecional. El tipo solo se edita en Datos > Categorías (no en Gastos ni en Ingresos); ahí también se crean categorías nuevas. Los cambios de tipo y las categorías nuevas se guardan en los datos cifrados, no en el código.
 
 ## Estilo
 - Textos de la app en español. Las frases empiezan con mayúscula; las explicaciones empiezan con "*" y en minúscula. No usar "Datos de ejemplo".

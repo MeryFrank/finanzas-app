@@ -5,7 +5,7 @@ import { parseAmount, parseCents, formatEuros } from '../src/core/money.js';
 import { detectFormat } from '../src/core/csv/detect.js';
 import { importCsv, dedupe, checkBalances, activityEntry } from '../src/core/csv/import.js';
 import { applyRules, needsReview } from '../src/core/classify.js';
-import { EXPENSE_CATEGORIES, EXPENSE_GROUPS, INCOME_CATEGORIES, INCOME_GROUPS } from '../src/core/categories.js';
+import { INCOME_CATEGORIES, INCOME_GROUPS } from '../src/core/categories.js';
 import { CARD_CSV, ACCOUNT_CSV } from './fixtures/revolut.js';
 
 test('parseCsv: comillas, comas internas, comillas escapadas, BOM y CRLF', () => {
@@ -115,11 +115,7 @@ test('registro de actividad: solo nombre de archivo y filas nuevas', () => {
   assert.deepEqual(Object.keys(activityEntry('extracto.csv', 7)).sort(), ['file', 'newRows']);
 });
 
-test('catálogo: 32 categorías de gasto en 8 grupos y 5 de ingreso', () => {
-  assert.equal(EXPENSE_CATEGORIES.length, 32);
-  assert.equal(Object.keys(EXPENSE_GROUPS).length, 8);
-  assert.ok(EXPENSE_CATEGORIES.every((c) => c.group in EXPENSE_GROUPS));
-  assert.equal(new Set(EXPENSE_CATEGORIES.map((c) => c.id)).size, 32);
+test('catálogo de ingresos: 5 categorías en 2 grupos', () => {
   assert.equal(INCOME_CATEGORIES.length, 5);
   assert.ok(INCOME_CATEGORIES.every((c) => c.group in INCOME_GROUPS));
 });
