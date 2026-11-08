@@ -59,3 +59,24 @@ export const sameCount = (data, key) => {
   const t = data.movements.find((m) => m.key === key);
   return t ? data.movements.filter((m) => m.key === key || (needsReview(m) && m.source === t.source && m.description === t.description)).length : 0;
 };
+
+/**
+ * Cambia la clasificación de UN movimiento (aunque ya estuviera clasificado). No toca los demás ni crea reglas.
+ * @param {import('./store.js').AppData} data
+ * @param {string} key
+ * @param {Choice} choice
+ */
+export function reclassifyMovement(data, key, choice) {
+  if (!data.movements.some((m) => m.key === key)) throw new Error('No encuentro ese movimiento');
+  return { ...data, movements: data.movements.map((m) => (m.key === key ? { ...m, kind: choice.kind, categoryId: choice.categoryId ?? null } : m)) };
+}
+
+/** Pone o quita el nombre propio de un movimiento. Un nombre vacío o igual al original lo quita. */
+export function renameMovement(data, key, name) {
+  const m = data.movements.find((x) => x.key === key);
+  if (!m) throw new Error('No encuentro ese movimiento');
+  const names = { ...(data.names || {}) };
+  const v = String(name || '').trim().slice(0, 80);
+  if (v && v !== m.description) names[key] = v; else delete names[key];
+  return { ...data, names };
+}

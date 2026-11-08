@@ -1,5 +1,5 @@
 // Caché mínima para que la app abra sin conexión. Subir VERSION al cambiar archivos.
-const VERSION = 'v4';
+const VERSION = 'v5';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'src/styles.css', 'src/main.js', 'src/router.js', 'src/storage.js',
   'src/screens/index.js', 'src/screens/html.js', 'src/screens/lock.js', 'src/screens/datos.js', 'src/screens/ui.js', 'src/screens/gastos.js', 'src/screens/clasificar.js', 'src/screens/presupuesto.js', 'src/screens/movimientos.js',

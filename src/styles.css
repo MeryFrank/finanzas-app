@@ -143,3 +143,40 @@ label.bud-row { flex-direction: row; justify-content: space-between; align-items
 .bud-in { display: flex; align-items: center; gap: 6px; color: var(--muted); }
 .bud-in input { width: 84px; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; text-align: right; color: var(--text); background: #fff; }
 .center-t { text-align: center; min-height: 16px; }
+
+/* ---- Movimientos completo ---- */
+.row-scroll { flex: none; display: flex; gap: 6px; overflow-x: auto; padding: 2px 0; }
+.gchip, .tchip { flex: none; min-height: 40px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.gchip.sm .dot { width: 8px; height: 8px; border-radius: 50%; }
+.wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.sub-head { flex-basis: 100%; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--primary); padding-top: 4px; }
+.refine { flex: none; min-height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: #2c4b7a; font-size: 13px; font-weight: 600; cursor: pointer; }
+.link-btn { min-height: 44px; margin: -6px -8px -6px 0; padding: 0 8px; border: 0; background: transparent; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.link-btn.tog { color: #355a4f; font-size: 12px; }
+.switch { width: 34px; height: 20px; border-radius: 999px; position: relative; display: inline-block; }
+.switch span { position: absolute; top: 2px; width: 16px; height: 16px; border-radius: 999px; background: #fff; }
+.seg.sm { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 3px; }
+.seg.sm .seg-btn { min-height: 36px; font-size: 12px; }
+.chart { position: relative; height: 160px; }
+.chart .gl { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--line); }
+.chart .gl.top { top: 0; } .chart .gl.mid { top: 50%; border-top-color: #e6f4ee; }
+.chart .max { position: absolute; left: 2px; top: 2px; font-size: 10px; color: var(--muted); }
+.chart .cols { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 3px; }
+.col { flex: 1; min-width: 0; height: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; padding: 0 1px; border: 0; border-radius: 6px; cursor: pointer; }
+.chart-m { display: flex; gap: 3px; } .chart-m span { flex: 1; text-align: center; font-size: 9px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: #1f3d34; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.tap { background: #ecfdf5; border-radius: 10px; padding: 8px 12px; font-size: 12px; line-height: 1.45; color: #1f3d34; min-height: 34px; box-sizing: border-box; }
+.mon-head { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 4px 4px; font-size: 12px; font-weight: 700; color: var(--primary); letter-spacing: 0.04em; text-transform: uppercase; }
+.mon-head span:last-child { color: #355a4f; }
+.txs { display: flex; flex-direction: column; }
+.tx { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 4px; padding-left: 10px; border-radius: 10px; border-left: 4px solid; }
+.tx-e { font-size: 16px; width: 22px; text-align: center; }
+.tx-m { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 4px 0; }
+.tx-n { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-s { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-old { color: #6b7f78; }
+.tx-a { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.tx-menu { flex: none; width: 36px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+.menu-item { min-height: 52px; display: flex; align-items: center; padding: 0 4px; border: 0; border-top: 1px solid #e6f4ee; background: transparent; font-size: 15px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; }
+.sheet input[type=text] { min-height: 48px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font-size: 16px; font-weight: 500; color: var(--text); }

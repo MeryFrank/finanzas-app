@@ -4,7 +4,7 @@ import { createVault, openVault, seal } from './crypto.js';
 import { emptyData, validateData, ingest, LOCK_OPTIONS, DEFAULT_LOCK_MINUTES } from './store.js';
 import { importCsv } from './csv/import.js';
 import { SOURCES } from './store.js';
-import { applyRules, classifyMovement } from './classify.js';
+import { applyRules, classifyMovement, reclassifyMovement, renameMovement } from './classify.js';
 import { exportBackup, restoreBackup, backupFileName } from './backup.js';
 
 export const IDLE_MS = DEFAULT_LOCK_MINUTES * 60 * 1000; // por defecto se bloquea a los 5 minutos sin tocar la app o en segundo plano; se puede cambiar en Datos
@@ -119,6 +119,18 @@ export class Session {
     this.data = r.data;
     await this.save();
     return r.affected;
+  }
+
+  async reclassify(key, choice) {
+    this.touch();
+    this.data = reclassifyMovement(this.data, key, choice);
+    await this.save();
+  }
+
+  async rename(key, name) {
+    this.touch();
+    this.data = renameMovement(this.data, key, name);
+    await this.save();
   }
 
   /** @param {Record<string,number>} budget euros al mes por grupo */

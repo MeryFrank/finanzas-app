@@ -5,7 +5,7 @@ import { pendingMovements, GROUP_STYLE, MONTHS_SHORT } from '../core/analysis.js
 import { expenseCatalog, EXPENSE_GROUPS, INCOME_CATEGORIES, INCOME_GROUPS } from '../core/categories.js';
 import { needsReview, sameCount } from '../core/classify.js';
 
-const NO_COUNT = [
+export const NO_COUNT = [
   ['traspaso', 'Traspaso entre cuentas propias'],
   ['reembolso-compartido', 'Reembolso compartido (bizum o transferencia)'],
   ['ahorro-inversion', 'Ahorro o inversión']
@@ -35,15 +35,15 @@ export function clasificarState(ctx) {
   return ui.clasificar;
 }
 
-function pickerHtml(catalog, current) {
+export function pickerHtml(catalog, current, act = 'choose') {
   const sel = (v) => (v === current ? '600' : '400');
   const groups = Object.keys(EXPENSE_GROUPS).map((gid) => {
     const st = GROUP_STYLE[gid];
     const items = catalog.filter((c) => c.group === gid && c.id !== 'sin-clasificar');
-    return items.length ? `<div class="pick-group"><span class="pick-head">${esc(EXPENSE_GROUPS[gid])}</span>${items.map((c) => `<button class="pick" style="font-weight:${sel('gasto:' + c.id)}" data-act="choose" data-choice="gasto:${esc(c.id)}"><span class="emoji" style="background:${st.color}2b" aria-hidden="true">${st.emoji}</span>${esc(c.name)}</button>`).join('')}</div>` : '';
+    return items.length ? `<div class="pick-group"><span class="pick-head">${esc(EXPENSE_GROUPS[gid])}</span>${items.map((c) => `<button class="pick" style="font-weight:${sel('gasto:' + c.id)}" data-act="${act}" data-choice="gasto:${esc(c.id)}"><span class="emoji" style="background:${st.color}2b" aria-hidden="true">${st.emoji}</span>${esc(c.name)}</button>`).join('')}</div>` : '';
   }).join('');
-  const inc = `<div class="pick-group"><span class="pick-head">Ingresos</span>${INCOME_CATEGORIES.map((c) => `<button class="pick" style="font-weight:${sel('ingreso:' + c.id)}" data-act="choose" data-choice="ingreso:${esc(c.id)}"><span class="emoji" style="background:${c.group === 'nomina' ? '#2e8a472b' : '#0ea5e92b'}" aria-hidden="true">${c.group === 'nomina' ? '💼' : '↩️'}</span>${esc(c.name)}</button>`).join('')}</div>`;
-  const no = `<div class="pick-group"><span class="pick-head">No cuenta como gasto ni ingreso</span>${NO_COUNT.map(([k, n]) => `<button class="pick" style="font-weight:${sel(k)}" data-act="choose" data-choice="${k}"><span class="emoji" style="background:#94a3b82b" aria-hidden="true">🔁</span>${esc(n)}</button>`).join('')}</div>`;
+  const inc = `<div class="pick-group"><span class="pick-head">Ingresos</span>${INCOME_CATEGORIES.map((c) => `<button class="pick" style="font-weight:${sel('ingreso:' + c.id)}" data-act="${act}" data-choice="ingreso:${esc(c.id)}"><span class="emoji" style="background:${c.group === 'nomina' ? '#2e8a472b' : '#0ea5e92b'}" aria-hidden="true">${c.group === 'nomina' ? '💼' : '↩️'}</span>${esc(c.name)}</button>`).join('')}</div>`;
+  const no = `<div class="pick-group"><span class="pick-head">No cuenta como gasto ni ingreso</span>${NO_COUNT.map(([k, n]) => `<button class="pick" style="font-weight:${sel(k)}" data-act="${act}" data-choice="${k}"><span class="emoji" style="background:#94a3b82b" aria-hidden="true">🔁</span>${esc(n)}</button>`).join('')}</div>`;
   return groups + inc + no;
 }
 

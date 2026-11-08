@@ -134,3 +134,24 @@ test('datos guardados antes de existir los ajustes siguen abriendo con el valor 
   await s2.start(); await s2.unlock('contraseña-larga');
   assert.equal(s2.data.settings.lockMinutes, 5);
 });
+
+test('cambiar el nombre y reclasificar un movimiento solo afecta a ese movimiento y se conserva al bloquear', async () => {
+  const { s, storage } = mk();
+  await s.start(); await s.create('contraseña-larga', 'contraseña-larga');
+  await s.importFiles([{ name: 'cuenta.csv', text: ACCOUNT_CSV }]);
+  const g = s.data.movements.filter((m) => m.kind === 'gasto');
+  assert.ok(g.length >= 2);
+  await s.rename(g[0].key, '  Mi nombre  ');
+  assert.equal(s.data.names[g[0].key], 'Mi nombre');
+  await s.rename(g[0].key, g[0].description); // igual al original: se quita
+  assert.equal(s.data.names[g[0].key], undefined);
+  await s.rename(g[0].key, 'Otro');
+  await s.reclassify(g[0].key, { kind: 'gasto', categoryId: 'supermercado' });
+  assert.equal(s.data.movements.find((m) => m.key === g[0].key).categoryId, 'supermercado');
+  assert.notEqual(s.data.movements.find((m) => m.key === g[1].key).categoryId, 'supermercado');
+  assert.equal(s.data.rules.length, 0); // no aprende reglas
+  s.lock();
+  const s2 = new Session({ storage, iterations: 1000 });
+  await s2.start(); await s2.unlock('contraseña-larga');
+  assert.equal(s2.data.names[g[0].key], 'Otro');
+});

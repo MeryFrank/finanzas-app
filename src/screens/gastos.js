@@ -94,7 +94,7 @@ export function actGastos(name, el, ctx) {
   else if (name === 'toggle-group') st.open = st.open === el.dataset.id ? null : el.dataset.id;
   else if (name === 'info') st.info = el.dataset.key;
   else if (name === 'close-sheet') st.info = null;
-  else if (name === 'go-mov') ctx.ui.mov = { group: el.dataset.group || null, sub: el.dataset.sub || null };
+  else if (name === 'go-mov') { ctx.ui.mov = { group: el.dataset.group || null, sub: el.dataset.sub || null }; ctx.ui.movs = null; }
   else return false;
   return true;
 }
