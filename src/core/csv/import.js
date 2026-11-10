@@ -14,13 +14,20 @@ const DEGIRO = {
   'degiro-statement': parseDegiroStatement
 };
 
+/** Separador de la cabecera: coma, punto y coma o tabulador (según cómo se exporte o abra el archivo). */
+export function detectSeparator(text) {
+  const first = String(text ?? '').replace(/^\uFEFF/, '').split(/\r?\n/, 1)[0];
+  const count = (c) => first.split(c).length - 1;
+  return [',', ';', '\t'].reduce((best, c) => (count(c) > count(best) ? c : best), ',');
+}
+
 /**
  * Lee un CSV, detecta el formato por la cabecera y devuelve los movimientos.
  * @param {string} text contenido del archivo
  * @returns {{ok:true, format:{id:string,label:string}, movements?:import('../model.js').Movement[], positions?:import('./degiro.js').Position[], cashCents?:number|null, trades?:import('./degiro.js').Trade[], events?:(import('./degiro.js').InvestmentEvent|import('./revolutFund.js').FundEvent)[], skipped:Object} | {ok:false, error:string}}
  */
 export function importCsv(text) {
-  const rows = parseCsv(text);
+  const rows = parseCsv(text, detectSeparator(text));
   if (rows.length === 0) return { ok: false, error: 'El archivo está vacío.' };
   const format = detectFormat(rows[0]);
   if (!format) return { ok: false, error: 'No reconozco este formato de CSV.' };

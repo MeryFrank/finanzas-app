@@ -119,3 +119,14 @@ test('catálogo de ingresos: 5 categorías en 2 grupos', () => {
   assert.equal(INCOME_CATEGORIES.length, 5);
   assert.ok(INCOME_CATEGORIES.every((c) => c.group in INCOME_GROUPS));
 });
+
+test('detecta el separador: tabulador y punto y coma', async () => {
+  const { importCsv } = await import('../src/core/csv/import.js');
+  const { CARD_CSV } = await import('./fixtures/revolut.js');
+  const csv = Array.isArray(CARD_CSV) ? CARD_CSV.join('\n') : CARD_CSV;
+  const base = importCsv(csv);
+  assert.equal(base.ok, true);
+  const tab = importCsv(csv.split('\n').map((l) => l.split(',').join('\t')).join('\n'));
+  assert.equal(tab.ok, true);
+  assert.equal(tab.movements.length, base.movements.length);
+});
